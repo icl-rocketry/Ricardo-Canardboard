@@ -130,6 +130,10 @@
         {
           "diameter": 0.0,
           "drill": 0.0
+        },
+        {
+          "diameter": 0.4,
+          "drill": 0.2
         }
       ],
       "zones_allow_external_fillets": false,
@@ -446,8 +450,8 @@
       "Power"
     ],
     [
-      "d66651f3-df31-4eca-a4f9-0a3c308c0c85",
-      "components"
+      "e0402675-af14-46ad-ab53-2a6080ba54c9",
+      "comps"
     ]
   ],
   "text_variables": {}
