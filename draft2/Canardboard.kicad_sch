@@ -3429,10 +3429,10 @@
       (reference "C39") (unit 1) (value "47uF") (footprint "Capacitor_SMD:C_1206_3216Metric")
     )
     (path "/e0402675-af14-46ad-ab53-2a6080ba54c9/0619d133-cb51-48eb-a462-9c8776cda480"
-      (reference "C40") (unit 1) (value "106uF") (footprint "iclr:CAPAE830X1050N")
+      (reference "C40") (unit 1) (value "106uF") (footprint "Capacitor_SMD:C_0805_2012Metric")
     )
     (path "/e0402675-af14-46ad-ab53-2a6080ba54c9/727fe409-de71-4a47-b6c9-218d808a2f4f"
-      (reference "C41") (unit 1) (value "106uF") (footprint "iclr:CAPAE830X1050N")
+      (reference "C41") (unit 1) (value "106uF") (footprint "Capacitor_SMD:C_0805_2012Metric")
     )
     (path "/e0402675-af14-46ad-ab53-2a6080ba54c9/27980518-96fb-4307-a3ab-31a47084816b"
       (reference "C42") (unit 1) (value "22uF") (footprint "Capacitor_SMD:C_1206_3216Metric")
@@ -3586,9 +3586,6 @@
     )
     (path "/00000000-0000-0000-0000-000061925999/00000000-0000-0000-0000-000061ab87f3"
       (reference "TP2") (unit 1) (value "TestPoint") (footprint "TestPoint:TestPoint_Pad_D1.0mm")
-    )
-    (path "/00000000-0000-0000-0000-000061925999/00000000-0000-0000-0000-000061ab9568"
-      (reference "TP3") (unit 1) (value "TestPoint") (footprint "TestPoint:TestPoint_Pad_D1.0mm")
     )
     (path "/48a413b4-b7c2-44ac-971c-583c31b73475/268b5def-07ff-4842-bca3-d3886d833ee9"
       (reference "TP4") (unit 1) (value "TestPoint") (footprint "TestPoint:TestPoint_Pad_D1.5mm")
