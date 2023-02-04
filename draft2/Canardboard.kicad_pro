@@ -60,7 +60,9 @@
           "width": 0.261112
         }
       ],
-      "drc_exclusions": [],
+      "drc_exclusions": [
+        "silk_overlap|100360000|95126666|17675431-c781-4277-b2ca-cef24a581f94|e0823b6c-6f39-4fd7-9158-793a29667f0c"
+      ],
       "meta": {
         "version": 2
       },
@@ -105,7 +107,7 @@
         "zones_intersect": "error"
       },
       "rules": {
-        "allow_blind_buried_vias": false,
+        "allow_blind_buried_vias": true,
         "allow_microvias": false,
         "max_error": 0.005,
         "min_clearance": 0.0,
