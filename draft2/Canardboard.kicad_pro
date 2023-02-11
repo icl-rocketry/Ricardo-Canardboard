@@ -61,6 +61,7 @@
         }
       ],
       "drc_exclusions": [
+        "silk_over_copper|123678571|93091428|d931f614-64e7-41d3-8b1b-8ee4f66fb8c7|6a17601b-a9af-4a9d-93e2-85a90f2fb01e",
         "silk_overlap|100360000|95126666|17675431-c781-4277-b2ca-cef24a581f94|e0823b6c-6f39-4fd7-9158-793a29667f0c"
       ],
       "meta": {
@@ -108,7 +109,7 @@
       },
       "rules": {
         "allow_blind_buried_vias": true,
-        "allow_microvias": false,
+        "allow_microvias": true,
         "max_error": 0.005,
         "min_clearance": 0.0,
         "min_copper_edge_clearance": 0.01,

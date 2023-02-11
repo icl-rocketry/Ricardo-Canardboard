@@ -3474,7 +3474,7 @@
       (reference "J1") (unit 1) (value "RBUS") (footprint "Connector_Molex:Molex_Mini-Fit_Jr_5566-06A_2x03_P4.20mm_Vertical")
     )
     (path "/00000000-0000-0000-0000-000061925999/00000000-0000-0000-0000-000061988c49"
-      (reference "J2") (unit 1) (value "USB_C_Receptacle_USB2.0") (footprint "Connector_USB:USB_C_Receptacle_GCT_USB4085")
+      (reference "J2") (unit 1) (value "USB_C_Receptacle_USB2.0") (footprint "Connector_USB:USB_C_Receptacle_Palconn_UTC16-G")
     )
     (path "/e0402675-af14-46ad-ab53-2a6080ba54c9/37dd7260-70f4-42aa-9e48-41c4e6816f64"
       (reference "J3") (unit 1) (value "Micro_SD_Card_Det") (footprint "Connector_Card:microSD_HC_Hirose_DM3AT-SF-PEJM5")
