@@ -524,16 +524,16 @@
       "USB -> UART"
     ],
     [
-      "48a413b4-b7c2-44ac-971c-583c31b73475",
-      "Power"
-    ],
-    [
       "9ac1c7a8-1287-4655-8906-f7f2eef1324f",
       "servopower"
     ],
     [
       "e0402675-af14-46ad-ab53-2a6080ba54c9",
       "comps"
+    ],
+    [
+      "972bc3cd-df5c-4105-af8a-a8e2a9c5e16b",
+      "rbusmosfets"
     ]
   ],
   "text_variables": {}
