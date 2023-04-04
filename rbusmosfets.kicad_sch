@@ -1,6 +1,6 @@
 (kicad_sch (version 20230121) (generator eeschema)
 
-  (uuid 3f410dcc-29af-42b8-9a48-69701432f161)
+  (uuid 16068c30-2cca-4792-a4d4-0b2ede163002)
 
   (paper "A4")
 
@@ -2863,7 +2863,7 @@
   (symbol (lib_id "Connector:TestPoint") (at 50.8 172.72 270) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid fb4c0f31-ff5b-48fe-8988-04a0df7ec4a4)
-    (property "Reference" "TP5" (at 49.53 175.26 90)
+    (property "Reference" "TP3" (at 49.53 175.26 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "TestPoint" (at 49.53 177.7969 90)
