@@ -130,10 +130,10 @@
         "min_silk_clearance": 0.0,
         "min_text_height": 0.5,
         "min_text_thickness": 0.153,
-        "min_through_hole_diameter": 0.19999999999999998,
+        "min_through_hole_diameter": 0.3,
         "min_track_width": 0.09,
         "min_via_annular_width": 0.125,
-        "min_via_diameter": 0.39999999999999997,
+        "min_via_diameter": 0.44999999999999996,
         "solder_mask_clearance": 0.0,
         "solder_mask_min_width": 0.0,
         "solder_mask_to_copper_clearance": 0.0,
@@ -191,16 +191,16 @@
           "drill": 0.0
         },
         {
-          "diameter": 0.4,
-          "drill": 0.2
+          "diameter": 0.45,
+          "drill": 0.3
         },
         {
           "diameter": 0.45,
-          "drill": 0.2
+          "drill": 0.3
         },
         {
           "diameter": 0.5,
-          "drill": 0.25
+          "drill": 0.3
         },
         {
           "diameter": 0.6,
@@ -540,12 +540,12 @@
       "servopower"
     ],
     [
-      "e0402675-af14-46ad-ab53-2a6080ba54c9",
-      "comps"
-    ],
-    [
       "972bc3cd-df5c-4105-af8a-a8e2a9c5e16b",
       "rbusmosfets"
+    ],
+    [
+      "e0402675-af14-46ad-ab53-2a6080ba54c9",
+      "comps"
     ]
   ],
   "text_variables": {}
