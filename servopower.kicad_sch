@@ -3077,7 +3077,7 @@
     (property "Value" "2.1uH" (at 195.58 130.81 90)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "iclr:INDPM3030X200N" (at 195.58 132.08 0)
+    (property "Footprint" "iclr:INDPM112100X400N" (at 195.58 132.08 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (at 195.58 132.08 0)
