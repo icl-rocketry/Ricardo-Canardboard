@@ -1484,6 +1484,11 @@
     (uuid ff513e7b-ac70-41ea-b640-05b29b62c30e)
   )
 
+  (text "This is a solder jumper\n" (at 193.04 139.7 0)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid e3ea5c55-9892-453e-9679-9c927a2814e4)
+  )
+
   (label "RBUS_3.3" (at 138.43 173.99 90) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 01bcfa22-bea6-43fa-8736-b36152c0b2ff)
