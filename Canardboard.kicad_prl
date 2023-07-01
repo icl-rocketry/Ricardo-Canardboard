@@ -9,10 +9,10 @@
     "net_color_mode": 1,
     "opacity": {
       "images": 0.0,
-      "pads": 0.9300000071525574,
-      "tracks": 0.8999999761581421,
-      "vias": 1.0,
-      "zones": 0.4000000059604645
+      "pads": 0.5699999928474426,
+      "tracks": 1.0,
+      "vias": 0.25999999046325684,
+      "zones": 0.5
     },
     "ratsnest_display_mode": 0,
     "selection_filter": {
