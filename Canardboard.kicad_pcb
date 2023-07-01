@@ -26984,7 +26984,7 @@
   (gr_arc (start 100.640798 75.167966) (mid 101.563059 72.681861) (end 104.000008 71.6366)
     (stroke (width 0.1) (type default)) (layer "Edge.Cuts") (tstamp c850cf3d-0d27-4051-a465-81550f19cb31))
   (gr_text_box "Designed By Martin Leung\nElectronics & Payload 2023"
-    (start 115.025 73.2) (end 138.475 77.5) (layer "B.SilkS") (tstamp 78109f96-ee75-436f-bb9a-e9dc6e4d10ff)
+    (start 140.8 119.675) (end 145.1 96.225) (angle 90) (layer "B.SilkS") (tstamp 78109f96-ee75-436f-bb9a-e9dc6e4d10ff)
       (effects (font (size 1 1) (thickness 0.153)) (justify left top mirror))
     (stroke (width 0.153) (type solid))  )
 
