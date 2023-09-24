@@ -5,6 +5,7 @@
 
 #include <librnp/rnp_networkmanager.h>
 #include <librnp/rnp_packet.h>
+#include <librrc/packets/servocalibrationpacket.h>
 
 class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
 {
@@ -21,7 +22,13 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
                     uint8_t address
                     ):
             NRCRemoteActuatorBase(networkmanager),
-            _networkmanager(networkmanager),      
+            _networkmanager(networkmanager),
+            _geddanServo1GPIO(geddanServo1GPIO),
+            _geddanServo2GPIO(geddanServo2GPIO),
+            _geddanServo3GPIO(geddanServo3GPIO),
+            _geddanServo1Channel(geddanServo1Channel),
+            _geddanServo2Channel(geddanServo2Channel),
+            _geddanServo3Channel(geddanServo3Channel),
             _address(address),
             geddanServo1(geddanServo1GPIO,geddanServo1Channel,networkmanager),
             geddanServo2(geddanServo2GPIO,geddanServo2Channel,networkmanager),
@@ -31,7 +38,8 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
 
         void setup();
         void update();
-        void allGotoCalibratedAngle(uin);
+        void gotoHighResAngle(uint16_t angle);
+        void allGotoDesiredAngle(uint8_t angle, bool unlimited = false);
         void updateTargetRollRate(float targetRollRate);
         
 
@@ -45,6 +53,17 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
         const uint8_t _geddanServo2Channel;
         const uint8_t _geddanServo3Channel;
         const uint8_t _address;
+
+        void loadCalibration();
+        uint16_t _default_angle1;
+        uint16_t _default_angle2;
+        uint16_t _default_angle3;
+
+        void setHome(uint16_t homeangle1, u_int16_t homeangle2, u_int16_t homeangle3){
+            _default_angle1 = homeangle1;
+            _default_angle2 = homeangle2;
+            _default_angle3 = homeangle3;
+        };
 
         NRCRemoteServo geddanServo1;
         NRCRemoteServo geddanServo2;    
@@ -73,7 +92,7 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
         bool default_called = false;
         bool shutdown_called = false;
 
-        GeddanState currentGeddanState = GeddanState::Unpowered;
+        GeddanState currentGeddanState = GeddanState::Default;
 
 
         float _zRollRate;

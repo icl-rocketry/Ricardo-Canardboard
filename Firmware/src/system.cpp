@@ -10,6 +10,7 @@
 #include "Config/commands_config.h"
 #include "Config/pinmap_config.h"
 #include "Config/general_config.h"
+#include "config/services_config.h"
 
 #include "Commands/commands.h"
 
@@ -35,12 +36,15 @@ void System::systemSetup(){
     //initialize statemachine with idle state
     statemachine.initalize(std::make_unique<Idle>(systemstatus,commandhandler));
     //any other setup goes here
-    networkmanager.registerService(10,)
-   
 
+   
+    Buck.setup();
+    uint8_t geddanservice = static_cast<uint8_t>(Services::ID::Geddan);
+    networkmanager.registerService(geddanservice,Geddan.getThisNetworkCallback());
 };
 
 
 void System::systemUpdate(){
-    
+    Buck.update();
+    Geddan.update();
 };

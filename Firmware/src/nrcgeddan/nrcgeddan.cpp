@@ -11,18 +11,26 @@ void NRCGeddan::setup()
     prevLogMessageTime = millis();
 }
 
-void NRCGeddan::allGotoCalibratedAngle(uint16_t angle)
+void NRCGeddan::allGotoDesiredAngle(uint16_t desiredAngle, bool unlimited = false) // -15 to 15
 {
-    geddanServo1.goto_Angle(angle);
-    geddanServo2.goto_Angle(angle);
-    geddanServo3.goto_Angle(angle);
+    if(!unlimited){
+        if(desiredAngle > 15){
+            desiredAngle = 15;
+        } else if(desiredAngle < -15){
+            desiredAngle = -15;
+        }
+
+    }
+    geddanServo1.goto_Angle(desiredAngle + _default_angle1);
+    geddanServo2.goto_Angle(desiredAngle + _default_angle2);
+    geddanServo3.goto_Angle(desiredAngle + _default_angle3);
 }
 
-void NRCRemoteServo::loadCalibration(){
+void NRCGeddan::loadCalibration(){
     
     std::string NVSName = "Srvo1" + std::to_string(_geddanServo1Channel);
-    std::string NVSName = "Srvo2" + std::to_string(_channel);
-    std::string NVSName = "Srvo3" + std::to_string(_channel);
+    std::string NVSName = "Srvo2" + std::to_string(_geddanServo2Channel);
+    std::string NVSName = "Srvo3" + std::to_string(_geddanServo3Channel);
     NVSStore _NVS(NVSName, NVSStore::calibrationType::Servo);
     
 
@@ -34,10 +42,9 @@ void NRCRemoteServo::loadCalibration(){
     ServoCalibrationPacket calibpacket;
     calibpacket.deserializeBody(calibSerialised);
 
-    setHome(calibpacket.home_angl);
-    setAngleLims(calibpacket.min_angl, calibpacket.max_angl);
-
+    setHome(calibpacket.home_angl, calibpacket.home_ang2, calibpacket.home_ang3);
 }
+
 
 
 void NRCGeddan::update()
@@ -47,11 +54,11 @@ void NRCGeddan::update()
         {
             if (timeFrameCheck(zeroCanards, startSlowSpinLeft))
             {
-                all_goto_angle(90);
+                allGotoDesiredAngle(0);
             }
             else if (timeFrameCheck(startSlowSpinLeft, startSlowSpinRight))
             {
-                all_goto_angle();
+                allGotoDesiredAngle();
             }
             else if (timeFrameCheck(startSlowSpinRight, startSlowSpinRight))
             {
@@ -91,4 +98,34 @@ bool NRCGeddan::timeFrameCheck(int64_t start_time, int64_t end_time)
     else{
         return false;
     }
+}
+void NRCGeddan::gotoHighResAngle(uint16_t angle)
+{
+    /*Check if angle value is outside of angle limits. Would also have added checking for the min_angle and max_angle but 
+    rangemap function already has checking for that so there's no point. */
+
+    if (angle > _angl_lim_max)
+    {
+        _value = _angl_lim_max;
+    }
+    else if (angle < _angl_lim_min)
+    {
+        _value = _angl_lim_min;
+    }
+    else
+    {
+        _value = angle; // update new position of actuator
+    }
+
+    ledcWrite(_channel, angletocounts((uint16_t)_value));
+}
+
+uint16_t NRCRemoteServo::angletocounts(uint16_t angle)
+{
+    return LIBRRC::rangemap<uint16_t>(angle,_min_angle,_max_angle,_min_counts,_max_counts); 
+}
+
+void NRCRemoteServo::reset()
+{
+    goto_Angle(_default_angle);
 }
