@@ -1,7 +1,9 @@
 #include "nrcgeddan.h"
+#include "geddancalibrationpacket.h"
 #include <Arduino.h>
 #include <libriccore/commands/commandhandler.h>
 #include "config/services_config.h"
+#include <librrc/Helpers/nvsstore.h>
 
 void NRCGeddan::setup()
 {
@@ -11,7 +13,7 @@ void NRCGeddan::setup()
     prevLogMessageTime = millis();
 }
 
-void NRCGeddan::allGotoDesiredAngle(uint16_t desiredAngle, bool unlimited = false) // -15 to 15
+void NRCGeddan::allGotoDesiredAngle(float desiredAngle, bool unlimited = false) // -15 to 15
 {
     if(!unlimited){
         if(desiredAngle > 15){
@@ -19,7 +21,6 @@ void NRCGeddan::allGotoDesiredAngle(uint16_t desiredAngle, bool unlimited = fals
         } else if(desiredAngle < -15){
             desiredAngle = -15;
         }
-
     }
     geddanServo1.goto_Angle(desiredAngle + _default_angle1);
     geddanServo2.goto_Angle(desiredAngle + _default_angle2);
@@ -39,10 +40,10 @@ void NRCGeddan::loadCalibration(){
     if(calibSerialised.size() == 0){
         return;
     }
-    ServoCalibrationPacket calibpacket;
+    GeddanCalibrationPacket calibpacket;
     calibpacket.deserializeBody(calibSerialised);
 
-    setHome(calibpacket.home_angl, calibpacket.home_ang2, calibpacket.home_ang3);
+    setHome(calibpacket.home_ang1, calibpacket.home_ang2, calibpacket.home_ang3);
 }
 
 
@@ -58,11 +59,17 @@ void NRCGeddan::update()
             }
             else if (timeFrameCheck(startSlowSpinLeft, startSlowSpinRight))
             {
-                allGotoDesiredAngle();
+                //  TODO: Make this go slower
+                geddanServo1.goto_AngleHighRes(0);
+                geddanServo2.goto_AngleHighRes(0);
+                geddanServo3.goto_AngleHighRes(0);
             }
             else if (timeFrameCheck(startSlowSpinRight, startSlowSpinRight))
             {
-                fuelServo.goto_Angle(90);
+                //  TODO: Make this go slower
+                geddanServo1.goto_AngleHighRes(180);
+                geddanServo2.goto_AngleHighRes(180);
+                geddanServo3.goto_AngleHighRes(180);
             }
 
             
@@ -99,33 +106,39 @@ bool NRCGeddan::timeFrameCheck(int64_t start_time, int64_t end_time)
         return false;
     }
 }
-void NRCGeddan::gotoHighResAngle(uint16_t angle)
+
+void NRCGeddan::execute_impl(packetptr_t packetptr) //Set it to roll rate, mili radians per second
 {
-    /*Check if angle value is outside of angle limits. Would also have added checking for the min_angle and max_angle but 
-    rangemap function already has checking for that so there's no point. */
+    SimpleCommandPacket execute_command(*packetptr);
 
-    if (angle > _angl_lim_max)
+    switch (execute_command.arg)
     {
-        _value = _angl_lim_max;
-    }
-    else if (angle < _angl_lim_min)
+    case 1:
     {
-        _value = _angl_lim_min;
+        if (currentGeddanState != GeddanState::)
+        {
+            break;
+        }
+        currentEngineState = EngineState::Ignition;
+        ignitionTime = millis();
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Ignition");
+        break;
     }
-    else
+    case 2:
     {
-        _value = angle; // update new position of actuator
+        currentEngineState = EngineState::ShutDown;
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("ShutDown");
+        break;
     }
-
-    ledcWrite(_channel, angletocounts((uint16_t)_value));
-}
-
-uint16_t NRCRemoteServo::angletocounts(uint16_t angle)
-{
-    return LIBRRC::rangemap<uint16_t>(angle,_min_angle,_max_angle,_min_counts,_max_counts); 
-}
-
-void NRCRemoteServo::reset()
-{
-    goto_Angle(_default_angle);
+    case 3:
+    {
+        if (currentEngineState != EngineState::ShutDown)
+        {
+            break;
+        }
+        currentEngineState = EngineState::Debug;
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("Entered debug");
+        break;
+    }
+    }
 }

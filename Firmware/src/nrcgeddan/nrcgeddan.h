@@ -6,6 +6,7 @@
 #include <librnp/rnp_networkmanager.h>
 #include <librnp/rnp_packet.h>
 #include <librrc/packets/servocalibrationpacket.h>
+#include "SiC43x.h"
 
 class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
 {
@@ -13,6 +14,7 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
     public:
 
         NRCGeddan(RnpNetworkManager &networkmanager,
+                    SiC43x &buck,
                     uint8_t geddanServo1GPIO,
                     uint8_t geddanServo2GPIO,
                     uint8_t geddanServo3GPIO,
@@ -22,6 +24,7 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
                     uint8_t address
                     ):
             NRCRemoteActuatorBase(networkmanager),
+            _buck(buck),
             _networkmanager(networkmanager),
             _geddanServo1GPIO(geddanServo1GPIO),
             _geddanServo2GPIO(geddanServo2GPIO),
@@ -39,7 +42,7 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
         void setup();
         void update();
         void gotoHighResAngle(uint16_t angle);
-        void allGotoDesiredAngle(uint8_t angle, bool unlimited = false);
+        void allGotoDesiredAngle(float angle, bool unlimited = false);
         void updateTargetRollRate(float targetRollRate);
         
 
@@ -53,6 +56,7 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
         const uint8_t _geddanServo2Channel;
         const uint8_t _geddanServo3Channel;
         const uint8_t _address;
+        SiC43x& _buck;
 
         void loadCalibration();
         uint16_t _default_angle1;
