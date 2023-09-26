@@ -1,2 +1,0 @@
-# canardboard
-Canard board
