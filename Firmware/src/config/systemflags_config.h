@@ -12,6 +12,8 @@ enum class SYSTEM_FLAG:uint32_t{
     ERROR_SERIAL = (1 << 10),
     //if rocket is inverted
     ERROR_ORIENTATION = (1 << 23),
+    ERROR_IMU = (1 << 15),
+    ERROR_CAN = (1 << 21),
     //warn
     WARN_BATT = (1 << 24),
     //FLIGHTPHASES 

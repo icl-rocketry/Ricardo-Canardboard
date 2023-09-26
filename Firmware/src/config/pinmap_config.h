@@ -22,11 +22,13 @@ namespace PinMap{
     static constexpr int SDSCLK = 22;
     static constexpr int SDCs = 24;
 
-    static constexpr int BuckPGOOD 48;
-    static constexpr int BuckEN 44;
+    static constexpr int BuckEN = 44;
+    static constexpr int BuckPGOOD = 48;
 
     static constexpr int TxCan = 41;
     static constexpr int RxCan = 42;
+
+    static constexpr int BuckOutputV = -1;
 };
 
 

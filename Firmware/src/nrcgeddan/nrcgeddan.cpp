@@ -13,16 +13,13 @@ void NRCGeddan::setup()
     geddanServo1.setup();
     geddanServo2.setup();
     geddanServo3.setup();
-    prevLogMessageTime = millis();
 }
-void NRCGeddan::allGotoCalibratedAngle(float desiredAngle, bool unlimited) // -15 to 15
+void NRCGeddan::allGotoCalibratedAngle(float desiredAngle) // -15 to 15
 {
-    if(!unlimited){
-        if(desiredAngle > 15){
-            desiredAngle = 15;
-        } else if(desiredAngle < -15){
-            desiredAngle = -15;
-        }
+    if(desiredAngle > 15){
+        desiredAngle = 15;
+    } else if(desiredAngle < -15){
+        desiredAngle = -15;
     }
     geddanServo1.goto_AngleHighRes(desiredAngle + _default_angle1);
     geddanServo2.goto_AngleHighRes(desiredAngle + _default_angle2);
@@ -60,8 +57,8 @@ void NRCGeddan::update()
     switch(currentGeddanState){
         case GeddanState::ConstantRoll:
         {
-            _imu.update(imustats);
-            _zRollRate = imustats.gz;
+            _imu.update(_imudata);
+            _zRollRate = _imudata.gz;
 
 
             

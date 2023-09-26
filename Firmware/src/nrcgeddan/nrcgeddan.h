@@ -7,6 +7,8 @@
 #include <librnp/rnp_packet.h>
 #include <librrc/packets/servocalibrationpacket.h>
 #include "SiC43x.h"
+#include "sensors/icm_20608.h"
+#include "sensors/sensorStructs.h"
 
 class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
 {
@@ -15,22 +17,24 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
 
         NRCGeddan(RnpNetworkManager &networkmanager,
                     SiC43x &buck,
+                    ICM_20608 &imu,
                     uint8_t geddanServo1GPIO,
-                    uint8_t geddanServo2GPIO,
-                    uint8_t geddanServo3GPIO,
                     uint8_t geddanServo1Channel,
+                    uint8_t geddanServo2GPIO,
                     uint8_t geddanServo2Channel,
+                    uint8_t geddanServo3GPIO,
                     uint8_t geddanServo3Channel,
                     uint8_t address
                     ):
             NRCRemoteActuatorBase(networkmanager),
-            _buck(buck),
             _networkmanager(networkmanager),
+            _buck(buck),
+            _imu(imu),
             _geddanServo1GPIO(geddanServo1GPIO),
-            _geddanServo2GPIO(geddanServo2GPIO),
-            _geddanServo3GPIO(geddanServo3GPIO),
             _geddanServo1Channel(geddanServo1Channel),
+            _geddanServo2GPIO(geddanServo2GPIO),
             _geddanServo2Channel(geddanServo2Channel),
+            _geddanServo3GPIO(geddanServo3GPIO),
             _geddanServo3Channel(geddanServo3Channel),
             _address(address),
             geddanServo1(geddanServo1GPIO,geddanServo1Channel,networkmanager),
@@ -41,22 +45,30 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
 
         void setup();
         void update();
-        void gotoHighResAngle(uint16_t angle);
-        void allGotoDesiredAngle(float angle, bool unlimited = false);
-        void updateTargetRollRate(float targetRollRate);
+
         
 
     protected:
 
         RnpNetworkManager& _networkmanager;
+        SiC43x& _buck;
+        ICM_20608& _imu;
         const uint8_t _geddanServo1GPIO;
-        const uint8_t _geddanServo2GPIO;
-        const uint8_t _geddanServo3GPIO;
         const uint8_t _geddanServo1Channel;
+        const uint8_t _geddanServo2GPIO;
         const uint8_t _geddanServo2Channel;
+        const uint8_t _geddanServo3GPIO;
         const uint8_t _geddanServo3Channel;
         const uint8_t _address;
-        SiC43x& _buck;
+
+        NRCRemoteServo geddanServo1;
+        NRCRemoteServo geddanServo2;    
+        NRCRemoteServo geddanServo3;  
+        
+        friend class NRCRemoteActuatorBase;
+        friend class NRCRemoteBase;
+
+        //Calibration
 
         void loadCalibration();
         uint16_t _default_angle1;
@@ -68,15 +80,14 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
             _default_angle2 = homeangle2;
             _default_angle3 = homeangle3;
         };
+  
 
-        NRCRemoteServo geddanServo1;
-        NRCRemoteServo geddanServo2;    
-        NRCRemoteServo geddanServo3;    
-
-        friend class NRCRemoteActuatorBase;
-        friend class NRCRemoteBase;
-
+        //Control
         
+        void allGotoRawAngle(float angle);
+        void allGotoCalibratedAngle(float angle);
+        void updateTargetRollRate(float targetRollRate);
+
         void execute_impl(packetptr_t packetptr);
         //void arm_impl(packetptr_t packetptr);
         //void disarm_impl(packetptr_t packetptr);
@@ -85,53 +96,43 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
 
         enum class GeddanState : uint8_t
         {
-            Startup = 0,
-            Shutdown = 1,
-            ConstantRoll = 2,
-            Default = 3, //Hold zero angle
-            Debug = 4,
-            Fun = 5
+            ConstantRoll = 0,
+            HoldZero = 1,
+            WiggleTest = 2,
+            Debug = 3, //Hold zero angle
+            Fun = 4,
         };
 
-        bool default_called = false;
-        bool shutdown_called = false;
+        GeddanState currentGeddanState = GeddanState::ConstantRoll;
 
-        GeddanState currentGeddanState = GeddanState::Default;
+        //P Controller
 
+        float error;
+        const float Kp = 0.5;
+        SensorStructs::ACCELGYRO_6AXIS_t _imudata;
 
         float _zRollRate;
         float _targetRollRate;
 
-        bool timeFrameCheck(int64_t start_time, int64_t end_time = -1);
-        bool nominalEngineOp();
-        bool pValUpdated();
-        float demandedFuelP();
         
-        void firePyro(uint32_t duration);
 
-        //Ignition sequence timings from moment ignition command received
+        
+        //Wiggle Test Stuff
+
         const uint64_t zeroCanards = 0;
-        const uint64_t startSlowSpinLeft = 500;
-        const uint64_t startSlowSpinRight = 1500;
-        const uint64_t zeroCanards2 = 2500;
-        const uint64_t startSpinLeft = 5000;
-        const uint64_t startSpinRight = 5500;
-        const uint64_t endOfIgnitionSeq = 6000;
-        long prevprint = 0;
+        const uint64_t startSlowSpinLeft = 1000;
+        const uint64_t zeroCanards2 = 2000;
+        const uint64_t startSlowSpinRight = 3000;
+        const uint64_t zeroCanards3 = 4000;
+        const uint64_t zeroCanards4 = 5000;
+        const uint64_t startSpinLeft = 5500;
+        const uint64_t startSpinRight = 6000;
+        const uint64_t endOfWiggleSeq = 6500;
 
-        float error;
-        const float Kp = 0.5;
-        uint16_t currFuelServoAngle;
-        uint16_t fuelServoDemandAngle;
-        const uint16_t fuelServoPreAngle = 60;
-        const uint16_t oxServoPreAngle = 90;
+        bool timeFrameCheck(int64_t start_time, int64_t end_time = -1);
 
-        uint64_t lastTimeFuelPUpdate;
-        uint64_t lastTimeChamberPUpdate;
+        uint16_t wiggleTestTime;
+        GeddanState previousGeddanState;
 
-        const uint64_t pressureUpdateTimeLim = 1000;
 
-        uint64_t prevLogMessageTime;
-
-        uint64_t prevFiring = 0;
 };
