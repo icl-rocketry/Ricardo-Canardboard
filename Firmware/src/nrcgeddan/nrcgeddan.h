@@ -72,9 +72,9 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
         //Calibration
 
         void loadCalibration();
-        uint16_t _default_angle1;
-        uint16_t _default_angle2;
-        uint16_t _default_angle3;
+        uint16_t _default_angle1 = 90;
+        uint16_t _default_angle2 = 90;
+        uint16_t _default_angle3 = 90;
 
         void setHome(uint16_t homeangle1, u_int16_t homeangle2, u_int16_t homeangle3){
             _default_angle1 = homeangle1;

@@ -64,8 +64,6 @@ void ICM_20608::update(SensorStructs::ACCELGYRO_6AXIS_t& data)
   
     readAccel(data.ax,data.ay,data.az);
     readGyro(data.gx,data.gy,data.gz);
-
-    RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>("RollRate: " + std::to_string(data.gz));
     readTemp(data.temp);
 
     if (calibrating) {
