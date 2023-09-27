@@ -15,9 +15,12 @@
 #include "Commands/commands.h"
 
 #include "States/idle.h"
-
+static constexpr int SPI_BUS_NUM = 0;
+static constexpr int SDSPI_BUS_NUM = 1;
 
 System::System():   RicCoreSystem(Commands::command_map,Commands::defaultEnabledCommands,Serial),
+                    spi(SPI_BUS_NUM),
+                    sdspi(SDSPI_BUS_NUM),
                     Buck(PinMap::BuckPGOOD, PinMap::BuckEN, 1, 1, PinMap::BuckOutputV, 34000, 3000),
                     IMU(spi, systemstatus, PinMap::ImuCs),
                     canbus(systemstatus,PinMap::TxCan,PinMap::RxCan,3),
@@ -29,9 +32,13 @@ void System::systemSetup(){
     Serial.setRxBufferSize(GeneralConfig::SerialRxSize);
     Serial.begin(GeneralConfig::SerialBaud);
     
+    std::array<uint8_t,3> axesOrder{2,1,0};
+    std::array<bool,3> axesFlip{1,1,1};
+
     setupPins();
     setupSPI();
 
+    IMU.setup(axesOrder,axesFlip);
 
     //intialize rnp message logger
     loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(networkmanager);
@@ -42,6 +49,9 @@ void System::systemSetup(){
 
     canbus.setup();
     Buck.setup();
+    Geddan.setup();
+
+    
     uint8_t geddanservice = static_cast<uint8_t>(Services::ID::Geddan);
     networkmanager.registerService(geddanservice,Geddan.getThisNetworkCallback());
 };

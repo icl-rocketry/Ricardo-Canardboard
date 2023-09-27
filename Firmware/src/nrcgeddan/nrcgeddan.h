@@ -68,6 +68,7 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
         friend class NRCRemoteActuatorBase;
         friend class NRCRemoteBase;
 
+        uint64_t prevLogMessageTime;
         //Calibration
 
         void loadCalibration();

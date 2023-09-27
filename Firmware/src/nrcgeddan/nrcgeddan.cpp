@@ -13,6 +13,7 @@ void NRCGeddan::setup()
     geddanServo1.setup();
     geddanServo2.setup();
     geddanServo3.setup();
+    prevLogMessageTime = millis();
 }
 void NRCGeddan::allGotoCalibratedAngle(float desiredAngle) // -15 to 15
 {

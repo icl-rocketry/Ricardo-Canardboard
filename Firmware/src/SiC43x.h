@@ -64,7 +64,7 @@ public:
      */
     void update()
     {
-        OutputV = ((float)(_RHighS + _RLowS) / (float)_RLowS) * (float)adc1_get_raw(ADC1_CHANNEL_3) * (_VReadPin) / (float)ADCMax;
+        //OutputV = ((float)(_RHighS + _RLowS) / (float)_RLowS) * (float)adc1_get_raw(ADC1_CHANNEL_3) * (_VReadPin) / (float)ADCMax;
         //Serial.println(OutputV);
         if (_PGoodPin >= 0)
         {
