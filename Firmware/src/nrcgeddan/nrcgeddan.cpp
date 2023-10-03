@@ -7,13 +7,19 @@
 #include "librrc/Helpers/rangemap.h"
 
 
+
 void NRCGeddan::setup()
 {
-    
     geddanServo1.setup();
     geddanServo2.setup();
     geddanServo3.setup();
     prevLogMessageTime = millis();
+    loadCalibration();
+
+
+    previousGeddanState = currentGeddanState;
+    wiggleTestTime = millis();
+    currentGeddanState = GeddanState::WiggleTest;
 }
 void NRCGeddan::allGotoCalibratedAngle(float desiredAngle) // -15 to 15
 {
@@ -35,12 +41,9 @@ void NRCGeddan::allGotoRawAngle(float angle)
 
 void NRCGeddan::loadCalibration(){
     
-    std::string NVSName = "Srvo1" + std::to_string(_geddanServo1Channel);
-    //std::string NVSName = "Srvo2" + std::to_string(_geddanServo2Channel);
-    //std::string NVSName = "Srvo3" + std::to_string(_geddanServo3Channel);
-    NVSStore _NVS(NVSName, NVSStore::calibrationType::Servo);
+    std::string NVSName = "Canard";
+    NVSStore _NVS(NVSName, NVSStore::calibrationType::Canard);
     
-
     std::vector<uint8_t> calibSerialised = _NVS.loadBytes();
     
     if(calibSerialised.size() == 0){
@@ -55,17 +58,18 @@ void NRCGeddan::loadCalibration(){
 
 void NRCGeddan::update()
 {
+    // if (this -> _state.flagSet(COMPONENT_STATUS_FLAGS::DISARMED))
+    // {
+    //     currentGeddanState = GeddanState::HoldZero;
+    // }
+    
     switch(currentGeddanState){
         case GeddanState::ConstantRoll:
         {
             _imu.update(_imudata);
-            _zRollRate = _imudata.gz;
-
-
-            
-
+            _zRollRate = _imudata.gz;            
             error = _targetRollRate - _zRollRate;
-            allGotoCalibratedAngle(- error * Kp);
+            allGotoCalibratedAngle(- error * _kp);
             
             break;
         }
@@ -82,19 +86,19 @@ void NRCGeddan::update()
             }
             else if (timeFrameCheck(startSlowSpinLeft, zeroCanards2))
             {
-                allGotoRawAngle(LIBRRC::rangemap<float>(millis() - wiggleTestTime, startSlowSpinLeft, startSlowSpinLeft + 800, 90, 0));
+                allGotoRawAngle(lerp(millis() - wiggleTestTime, startSlowSpinLeft, startSlowSpinLeft + 800, 90, 0));
             }
             else if (timeFrameCheck(zeroCanards2, startSlowSpinRight))
             {
-                allGotoRawAngle(LIBRRC::rangemap<float>(millis() - wiggleTestTime, zeroCanards2, zeroCanards2 + 800, 0, 90));
+                allGotoRawAngle(lerp(millis() - wiggleTestTime, zeroCanards2, zeroCanards2 + 800, 0, 90));
             }
             else if (timeFrameCheck(startSlowSpinRight, zeroCanards3))
             {
-                allGotoRawAngle(LIBRRC::rangemap<float>(millis() - wiggleTestTime, startSlowSpinRight, startSlowSpinLeft + 800, 90, 180));
+                allGotoRawAngle(lerp(millis() - wiggleTestTime, startSlowSpinRight, startSlowSpinRight + 800, 90, 180));
             }
             else if (timeFrameCheck(zeroCanards3, zeroCanards4))
             {
-                allGotoRawAngle(LIBRRC::rangemap<float>(millis() - wiggleTestTime, zeroCanards3, zeroCanards3 + 800, 180, 90));
+                allGotoRawAngle(lerp(millis() - wiggleTestTime, zeroCanards3, zeroCanards3 + 800, 180, 90));
             }
             else if (timeFrameCheck(zeroCanards4, startSpinLeft))
             {
@@ -112,6 +116,7 @@ void NRCGeddan::update()
             {
                 allGotoCalibratedAngle(0);
                 currentGeddanState = previousGeddanState;
+                
             }
             break;
         }
@@ -124,6 +129,18 @@ void NRCGeddan::update()
             break;
         }
     }
+}
+
+float NRCGeddan::lerp(float x, float in_min, float in_max, float out_min, float out_max){
+    float out = (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    
+    if (out > (out_max > out_min ? out_max : out_min)){
+        return (out_max > out_min ? out_max : out_min);
+    }
+    if (out < (out_min < out_max ? out_min : out_max)){
+        return (out_min < out_max ? out_min : out_max);
+    }
+    return out;
 }
 
 bool NRCGeddan::timeFrameCheck(int64_t start_time, int64_t end_time)
@@ -143,27 +160,42 @@ bool NRCGeddan::timeFrameCheck(int64_t start_time, int64_t end_time)
 
 void NRCGeddan::execute_impl(packetptr_t packetptr) //Set it to roll rate, mili radians per second
 {
+    currentGeddanState = GeddanState::ConstantRoll;
     SimpleCommandPacket execute_command(*packetptr);
     _targetRollRate = execute_command.arg;
 }
+void NRCGeddan::calibrate_impl(packetptr_t packetptr)
+{
+    GeddanCalibrationPacket calibrate_comm(*packetptr);
 
+    std::vector<uint8_t> serialisedvect = packetptr->getBody();
+
+    std::string NVSName = "Canard";
+    NVSStore _NVS(NVSName, NVSStore::calibrationType::Canard);
+    
+    _NVS.saveBytes(serialisedvect);
+    
+    setHome(calibrate_comm.home_ang1, calibrate_comm.home_ang2, calibrate_comm.home_ang3);
+
+}
 void NRCGeddan::extendedCommandHandler_impl(const NRCPacket::NRC_COMMAND_ID commandID,packetptr_t packetptr){
     SimpleCommandPacket command_packet(*packetptr);
     switch(static_cast<uint8_t>(commandID))
     {
-        case 5:
+        case 6: // Wiggle test
         {
-            currentGeddanState = static_cast<GeddanState>(command_packet.arg);
+            previousGeddanState = currentGeddanState;
+            wiggleTestTime = millis();
+            currentGeddanState = GeddanState::WiggleTest;
+            break;
         }
         case 7: // Debug go to calibrated angle
         {
             if(currentGeddanState == GeddanState::Debug){
                 allGotoCalibratedAngle(command_packet.arg);
-                break;
             }
-            else{
-                break;
-            }
+
+            break;
         }
         case 8: // Debug go to raw angle
         {
@@ -175,11 +207,9 @@ void NRCGeddan::extendedCommandHandler_impl(const NRCPacket::NRC_COMMAND_ID comm
                 break;
             }
         }
-        case 6: // Wiggle test
+        case 9:
         {
-            previousGeddanState = currentGeddanState;
-            currentGeddanState = GeddanState::WiggleTest;
-            wiggleTestTime = millis();
+            currentGeddanState = static_cast<GeddanState>(command_packet.arg);
         }
         default:
         {

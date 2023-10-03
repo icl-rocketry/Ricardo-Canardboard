@@ -72,16 +72,15 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
         //Calibration
 
         void loadCalibration();
-        uint16_t _default_angle1 = 90;
-        uint16_t _default_angle2 = 90;
-        uint16_t _default_angle3 = 90;
+        float _default_angle1 = 45;
+        float _default_angle2 = 45;
+        float _default_angle3 = 45;
 
-        void setHome(uint16_t homeangle1, u_int16_t homeangle2, u_int16_t homeangle3){
+        void setHome(float homeangle1, float homeangle2, float homeangle3){
             _default_angle1 = homeangle1;
             _default_angle2 = homeangle2;
             _default_angle3 = homeangle3;
         };
-  
 
         //Control
         
@@ -90,6 +89,7 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
         void updateTargetRollRate(float targetRollRate);
 
         void execute_impl(packetptr_t packetptr);
+        void calibrate_impl(packetptr_t packetptr);
         //void arm_impl(packetptr_t packetptr);
         //void disarm_impl(packetptr_t packetptr);
         void override_impl(packetptr_t packetptr);
@@ -100,7 +100,7 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
             ConstantRoll = 0,
             HoldZero = 1,
             WiggleTest = 2,
-            Debug = 3, //Hold zero angle
+            Debug = 3, 
             Fun = 4,
         };
 
@@ -109,7 +109,7 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
         //P Controller
 
         float error;
-        const float Kp = 0.5;
+        const float _kp = 0.05;
         SensorStructs::ACCELGYRO_6AXIS_t _imudata;
 
         float _zRollRate;
@@ -129,10 +129,10 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
         const uint64_t startSpinLeft = 5500;
         const uint64_t startSpinRight = 6000;
         const uint64_t endOfWiggleSeq = 6500;
-
+        float lerp(float x, float in_min, float in_max, float out_min, float out_max);
         bool timeFrameCheck(int64_t start_time, int64_t end_time = -1);
 
-        uint16_t wiggleTestTime;
+        uint32_t wiggleTestTime;
         GeddanState previousGeddanState;
 
 

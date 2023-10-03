@@ -24,7 +24,8 @@ System::System():   RicCoreSystem(Commands::command_map,Commands::defaultEnabled
                     Buck(PinMap::BuckPGOOD, PinMap::BuckEN, 0, 1, PinMap::BuckOutputV, 34000, 3000),
                     IMU(spi, systemstatus, PinMap::ImuCs),
                     canbus(systemstatus,PinMap::TxCan,PinMap::RxCan,3),
-                    Geddan(networkmanager,Buck,IMU,PinMap::ServoPWM1,0,PinMap::ServoPWM2,1,PinMap::ServoPWM3,2,networkmanager.getAddress()){};
+                    Geddan(networkmanager,Buck,IMU,PinMap::ServoPWM1,0,PinMap::ServoPWM2,1,PinMap::ServoPWM3,2,networkmanager.getAddress()),
+                    primarysd(SDSPI,PinMap::SDCs,SD_SCK_MHZ(20),false,&systemstatus){};
 
 
 void System::systemSetup(){
@@ -32,8 +33,8 @@ void System::systemSetup(){
     Serial.setRxBufferSize(GeneralConfig::SerialRxSize);
     Serial.begin(GeneralConfig::SerialBaud);
     
-    std::array<uint8_t,3> axesOrder{2,1,0};
-    std::array<bool,3> axesFlip{1,1,1};
+    std::array<uint8_t,3> axesOrder{0,1,2};
+    std::array<bool,3> axesFlip{0,0,0};
 
     setupPins();
     setupSPI();
@@ -51,7 +52,11 @@ void System::systemSetup(){
     Buck.setup();
     Geddan.setup();
 
+    // networkmanager.setNodeType(NODETYPE::HUB);
+    // networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST,{1,3});
     
+    // networkmanager.addInterface(&canbus);
+
     uint8_t geddanservice = static_cast<uint8_t>(Services::ID::Geddan);
     networkmanager.registerService(geddanservice,Geddan.getThisNetworkCallback());
 };

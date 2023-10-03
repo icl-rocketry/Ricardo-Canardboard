@@ -14,6 +14,7 @@
 #include "SiC43x.h"
 #include "sensors/icm_20608.h"
 #include "nrcgeddan/nrcgeddan.h"
+#include "Storage/sdfat_store.h"
 
 class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 {
@@ -32,6 +33,11 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         ICM_20608 IMU;
 
         CanBus<SYSTEM_FLAG> canbus;
+
+        SPIClass SDSPI; //SPI for the SD card
+        SPIClass SNSRSPI; //SPI for the sensors
+
+        //SdFat_Store primarysd;
 
     private:
         void setupSPI();

@@ -42,9 +42,9 @@ class GeddanCalibrationPacket : public RnpPacket{
         void deserializeBody(std::vector<uint8_t>& buf);
         
         uint8_t command;
-        uint16_t home_ang1;
-        uint16_t home_ang2;
-        uint16_t home_ang3;
+        float home_ang1;
+        float home_ang2;
+        float home_ang3;
 
         static constexpr size_t size(){
             return getSerializer().member_size();
