@@ -35,37 +35,18 @@ class GyroBuf : private std::queue<GyroReading> {
             // push new element on queue
             this->push(val);
             
-            const size_t curr_size = this->size();
-
-
             GyroReading lastVal = this->front();
             if(val.timestamp - lastVal.timestamp > rollingAverageDuration){
-                
+                while (val.timestamp - lastVal.timestamp > rollingAverageDuration)
+                {
+                    this->pop();
+                }
+                return lastVal;
             }
-            while (val.timestamp - lastVal.timestamp > rollingAverageDuration)
+            else
             {
-                this->pop();
-            }
-                return lastVal;
-            } else{
                 return GyroReading(0,0);
             }
-
-
-
-            if (curr_size == maxLen + 1){
-                
-                this->pop();
-                return lastVal;
-            }else 
-            if (curr_size < maxLen + 1) {
-                return GyroReading(0,0);
-            }else
-            if (curr_size > maxLen + 1){
-                throw std::runtime_error("GyroBuf size exceeded!");
-            }
-            return GyroReading(0,0);
-
         };
 
         size_t size(){

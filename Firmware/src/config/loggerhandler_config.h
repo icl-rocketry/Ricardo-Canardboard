@@ -5,6 +5,7 @@
 #include <libriccore/logging/loggers/coutlogger.h>
 #include <libriccore/logging/loggers/rnpmessagelogger.h>
 #include <libriccore/logging/loggers/syslogger.h>
+#include "Loggers/GeddanLogger/geddanlogger.h"
 
 #include "Loggers/TelemetryLogger/telemetrylogger.h"
 
@@ -19,7 +20,7 @@ namespace RicCoreLoggingConfig
         GEDDAN
     };
 
-    extern std::tuple<SysLogger,TelemetryLogger,CoutLogger> logger_list;
+    extern std::tuple<SysLogger,TelemetryLogger,CoutLogger,GeddanLogger> logger_list;
 }; 
 
 

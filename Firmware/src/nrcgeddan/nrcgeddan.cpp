@@ -59,7 +59,7 @@ void NRCGeddan::loadCalibration(){
 
 void NRCGeddan::update()
 {
-    logReadings();
+    //logReadings();
 
     // if (this -> _state.flagSet(COMPONENT_STATUS_FLAGS::DISARMED))
     // {
@@ -72,29 +72,11 @@ void NRCGeddan::update()
             _imu.update(_imudata);
             _zRollRate = _imudata.gz;            
             
-            rollingAverageSum += _zRollRate;
-            
-            if(!rollingLengthReached)
-            {
-                
-                gyroAverage.push(GyroReading(_zRollRate, millis()));
+            //rollingAverageSum += _zRollRate;
+            //rollingAverageSum -= gyroBuf.pop_push_back(GyroReading(_zRollRate, millis())).rollRate;
+            //rollingAverage = rollingAverageSum / static_cast<float>(gyroBuf.size());
 
-
-                rollingAverage = rollingAverageSum / static_cast<float>(rollingAverageCounter);
-                if(millis() - rollingAverageStart > rollingAverageDuration)
-                {
-                    rollingLengthReached = true;
-                    rollingAverageLength = rollingAverageCounter;
-                }
-            } else
-            {
-                rollingAverageSum -= gyroAverage.pop_push_back(_zRollRate);
-                rollingAverage = rollingAverageSum / static_cast<float>(rollingAverageLength);
-            }
-            
-            rollingAverageCounter ++;
-
-            error = _targetRollRate - rollingAverage;
+            error = _targetRollRate - _zRollRate;
 
             allGotoCalibratedAngle(- error * _kp);
 
@@ -252,9 +234,7 @@ void NRCGeddan::extendedCommandHandler_impl(const NRCPacket::NRC_COMMAND_ID comm
 }
 void NRCGeddan::resetMovingAverage()
 {
-    rollingLengthReached = false;
-    rollingAverageCounter = 0;
-    rollingAverageStart = millis();
+    gyroBuf = GyroBuf();
 }
 
 void NRCGeddan::logReadings()

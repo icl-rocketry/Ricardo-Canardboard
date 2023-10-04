@@ -4,11 +4,13 @@
 #include <libriccore/logging/loggers/rnpmessagelogger.h>
 #include <libriccore/logging/loggers/syslogger.h>
 
+#include "Loggers/GeddanLogger/geddanlogger.h"
 #include "Loggers/TelemetryLogger/telemetrylogger.h"
 
-std::tuple<SysLogger,TelemetryLogger,CoutLogger> RicCoreLoggingConfig::logger_list =
+std::tuple<SysLogger,TelemetryLogger,CoutLogger,GeddanLogger> RicCoreLoggingConfig::logger_list =
 {
     SysLogger(),
     TelemetryLogger(),
-    CoutLogger("COUT_LOG")
+    CoutLogger("COUT_LOG"),
+    GeddanLogger()
 };
