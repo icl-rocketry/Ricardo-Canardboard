@@ -5,6 +5,7 @@
 #include "config/services_config.h"
 #include <librrc/Helpers/nvsstore.h>
 #include "librrc/Helpers/rangemap.h"
+#include "Loggers/GeddanLogger/geddanlogframe.h"
 
 
 
@@ -58,6 +59,8 @@ void NRCGeddan::loadCalibration(){
 
 void NRCGeddan::update()
 {
+    logReadings();
+
     // if (this -> _state.flagSet(COMPONENT_STATUS_FLAGS::DISARMED))
     // {
     //     currentGeddanState = GeddanState::HoldZero;
@@ -69,30 +72,30 @@ void NRCGeddan::update()
             _imu.update(_imudata);
             _zRollRate = _imudata.gz;            
             
-            rollingAverageSum = 0;
+            rollingAverageSum += _zRollRate;
+            
             if(!rollingLengthReached)
             {
-                for (uint32_t i = 0; i < rollingAverageCounter; i++){
-                    rollingAverageSum += rollingArray[i];
-                }
+                
+                gyroAverage.push(GyroReading(_zRollRate, millis()));
+
+
                 rollingAverage = rollingAverageSum / static_cast<float>(rollingAverageCounter);
-                if(millis() - rollingAverageDuration > rollingAverageDuration)
+                if(millis() - rollingAverageStart > rollingAverageDuration)
                 {
                     rollingLengthReached = true;
                     rollingAverageLength = rollingAverageCounter;
                 }
             } else
             {
-                for (uint32_t i = rollingAverageCounter - rollingAverageLength; i < rollingAverageCounter; i++){
-                    rollingAverageSum += rollingArray[i % 1000];
-                }
+                rollingAverageSum -= gyroAverage.pop_push_back(_zRollRate);
                 rollingAverage = rollingAverageSum / static_cast<float>(rollingAverageLength);
             }
-
             
             rollingAverageCounter ++;
 
             error = _targetRollRate - rollingAverage;
+
             allGotoCalibratedAngle(- error * _kp);
 
             break;
@@ -139,6 +142,7 @@ void NRCGeddan::update()
             else if (timeFrameCheck(endOfWiggleSeq))
             {
                 allGotoCalibratedAngle(0);
+                resetMovingAverage();
                 currentGeddanState = previousGeddanState;
                 
             }
@@ -237,10 +241,7 @@ void NRCGeddan::extendedCommandHandler_impl(const NRCPacket::NRC_COMMAND_ID comm
         case 9:
         {
             currentGeddanState = static_cast<GeddanState>(command_packet.arg);
-
-
-            rollingLengthReached = false;
-            rollingAverageStart = millis();
+            resetMovingAverage();
         }
         default:
         {
@@ -249,9 +250,26 @@ void NRCGeddan::extendedCommandHandler_impl(const NRCPacket::NRC_COMMAND_ID comm
         }
     }
 }
-void NRCGeddan::startConstantRoll()
+void NRCGeddan::resetMovingAverage()
 {
     rollingLengthReached = false;
     rollingAverageCounter = 0;
     rollingAverageStart = millis();
+}
+
+void NRCGeddan::logReadings()
+{
+    if (micros() - prev_telemetry_log_time > telemetry_log_delta)
+    {
+        GeddanLogFrame logframe;
+
+        logframe.zRollRate = _zRollRate;
+        logframe.movingAverage = rollingAverage;
+
+        logframe.timestamp = micros();
+
+        RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::GEDDAN>(logframe);
+
+        prev_telemetry_log_time = micros();
+    }
 }

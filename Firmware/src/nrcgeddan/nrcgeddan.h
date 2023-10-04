@@ -10,6 +10,81 @@
 #include "sensors/icm_20608.h"
 #include "sensors/sensorStructs.h"
 
+struct GyroReading
+{
+    float rollRate;
+    uint32_t timestamp;
+
+    GyroReading(float rollRate, uint32_t timestamp):
+        rollRate(rollRate), 
+        timestamp(timestamp)
+        {};
+};
+
+
+class GyroBuf : private std::queue<GyroReading> {
+    public:
+        /**
+         * @brief inserts a new value at the front and returns the removed value. 
+         * Returns zero if len != maxLen
+         * 
+         * @param val 
+         * @return T 
+         */
+        GyroReading pop_push_back(GyroReading val){
+            // push new element on queue
+            this->push(val);
+            
+            const size_t curr_size = this->size();
+
+
+            GyroReading lastVal = this->front();
+            if(val.timestamp - lastVal.timestamp > rollingAverageDuration){
+                
+            }
+            while (val.timestamp - lastVal.timestamp > rollingAverageDuration)
+            {
+                this->pop();
+            }
+                return lastVal;
+            } else{
+                return GyroReading(0,0);
+            }
+
+
+
+            if (curr_size == maxLen + 1){
+                
+                this->pop();
+                return lastVal;
+            }else 
+            if (curr_size < maxLen + 1) {
+                return GyroReading(0,0);
+            }else
+            if (curr_size > maxLen + 1){
+                throw std::runtime_error("GyroBuf size exceeded!");
+            }
+            return GyroReading(0,0);
+
+        };
+
+        size_t size(){
+            return this->size();
+        }
+
+        void push(GyroReading val){
+            this->push(val);
+        }
+
+        using std::queue<GyroReading>::size;
+
+    private:
+        static constexpr size_t maxLen = 1000;
+        static constexpr uint32_t rollingAverageDuration = 50;
+
+
+};
+
 class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
 {
 
@@ -108,7 +183,7 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
 
         //P Controller
 
-        void startConstantRoll();
+        void resetMovingAverage();
 
         float error;
         const float _kp = 0.05;
@@ -117,37 +192,39 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
         float _zRollRate;
         float _targetRollRate;
 
-        uint32_t rollingAverageDuration = 50;
-
-        uint32_t rollingAverageStart;
-        uint32_t rollingAverageCounter;
-        uint32_t rollingAverageLength;
+        GyroBuf gyroBuf;
         float rollingAverageSum;
         float rollingAverage;
-        bool rollingLengthReached = false;
-        std::vector<float> rollingArray(1000);
-
-
-
         
 
         
         //Wiggle Test Stuff
 
         const uint64_t zeroCanards = 0;
-        const uint64_t startSlowSpinLeft = 1000;
-        const uint64_t zeroCanards2 = 2000;
-        const uint64_t startSlowSpinRight = 3000;
-        const uint64_t zeroCanards3 = 4000;
-        const uint64_t zeroCanards4 = 5000;
-        const uint64_t startSpinLeft = 5500;
-        const uint64_t startSpinRight = 6000;
-        const uint64_t endOfWiggleSeq = 6500;
+        // const uint64_t startSlowSpinLeft = 1000;
+        // const uint64_t zeroCanards2 = 2000;
+        // const uint64_t startSlowSpinRight = 3000;
+        // const uint64_t zeroCanards3 = 4000;
+        // const uint64_t zeroCanards4 = 5000;
+        // const uint64_t startSpinLeft = 5500;
+        // const uint64_t startSpinRight = 6000;
+        // const uint64_t endOfWiggleSeq = 6500;
+
+        const uint64_t startSlowSpinLeft = 100;
+        const uint64_t zeroCanards2 = 200;
+        const uint64_t startSlowSpinRight = 300;
+        const uint64_t zeroCanards3 = 400;
+        const uint64_t zeroCanards4 = 500;
+        const uint64_t startSpinLeft = 550;
+        const uint64_t startSpinRight = 600;
+        const uint64_t endOfWiggleSeq = 650;
         float lerp(float x, float in_min, float in_max, float out_min, float out_max);
         bool timeFrameCheck(int64_t start_time, int64_t end_time = -1);
 
         uint32_t wiggleTestTime;
         GeddanState previousGeddanState;
 
-
+        void logReadings();
+        uint32_t telemetry_log_delta = 5000;
+        uint32_t prev_telemetry_log_time;
 };

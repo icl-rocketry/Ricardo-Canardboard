@@ -15,7 +15,8 @@ namespace RicCoreLoggingConfig
     {
         SYS, // default system logging
         TELEMETRY,
-        COUT // cout logging
+        COUT, // cout logging
+        GEDDAN
     };
 
     extern std::tuple<SysLogger,TelemetryLogger,CoutLogger> logger_list;

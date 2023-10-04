@@ -50,10 +50,10 @@ void System::systemSetup(){
     Buck.setup();
     Geddan.setup();
 
-    // networkmanager.setNodeType(NODETYPE::HUB);
-    // networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST,{1,3});
+    networkmanager.setNodeType(NODETYPE::HUB);
+    networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST,{1,3});
     
-    // networkmanager.addInterface(&canbus);
+    networkmanager.addInterface(&canbus);
 
     uint8_t geddanservice = static_cast<uint8_t>(Services::ID::Geddan);
     networkmanager.registerService(geddanservice,Geddan.getThisNetworkCallback());
@@ -108,11 +108,11 @@ void System::initializeLoggers()
     primarysd.mkdir(log_directory_path);
 
     std::unique_ptr<WrappedFile> syslogfile = primarysd.open(log_directory_path + "/syslog.txt", static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END));
-    std::unique_ptr<WrappedFile> telemetrylogfile = primarysd.open(log_directory_path + "/telemetrylog.txt", static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END),50);
+    std::unique_ptr<WrappedFile> geddanlogfile = primarysd.open(log_directory_path + "/geddanlog.txt", static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END),50);
 
     // intialize sys logger
     loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(std::move(syslogfile), networkmanager);
 
     // initialize telemetry logger
-    loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::TELEMETRY>().initialize(std::move(telemetrylogfile),[](std::string_view msg){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(msg);});
+    loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::GEDDAN>().initialize(std::move(geddanlogfile),[](std::string_view msg){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(msg);});
 }
