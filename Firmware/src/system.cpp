@@ -24,8 +24,9 @@ System::System():   RicCoreSystem(Commands::command_map,Commands::defaultEnabled
                     Buck(PinMap::BuckPGOOD, PinMap::BuckEN, 0, 1, PinMap::BuckOutputV, 34000, 3000),
                     IMU(spi, systemstatus, PinMap::ImuCs),
                     canbus(systemstatus,PinMap::TxCan,PinMap::RxCan,3),
-                    Geddan(networkmanager,Buck,IMU,PinMap::ServoPWM1,0,PinMap::ServoPWM2,1,PinMap::ServoPWM3,2,networkmanager.getAddress()),
-                    primarysd(SDSPI,PinMap::SDCs,SD_SCK_MHZ(20),false,&systemstatus){};
+                    primarysd(SDSPI,PinMap::SDCs,SD_SCK_MHZ(20),false,&systemstatus),
+                    Geddan(networkmanager,Buck,IMU,PinMap::ServoPWM1,0,PinMap::ServoPWM2,1,PinMap::ServoPWM3,2,networkmanager.getAddress())
+                    {};
 
 
 void System::systemSetup(){
@@ -40,9 +41,6 @@ void System::systemSetup(){
     setupSPI();
 
     IMU.setup(axesOrder,axesFlip);
-
-    //intialize rnp message logger
-    loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(networkmanager);
 
     //initialize statemachine with idle state
     statemachine.initalize(std::make_unique<Idle>(systemstatus,commandhandler));
@@ -59,6 +57,9 @@ void System::systemSetup(){
 
     uint8_t geddanservice = static_cast<uint8_t>(Services::ID::Geddan);
     networkmanager.registerService(geddanservice,Geddan.getThisNetworkCallback());
+
+    primarysd.setup();
+    initializeLoggers();
 };
 
 
@@ -89,3 +90,29 @@ void System::setupPins(){
     digitalWrite(PinMap::SDCs, HIGH);
 
 };
+
+void System::initializeLoggers()
+{
+    // check if sd card is mounted
+    if (primarysd.getState() != StoreBase::STATE::NOMINAL)
+    {
+        loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(nullptr, networkmanager);
+
+        return;
+    }
+
+    // open log files
+    // get unique directory for logs
+    std::string log_directory_path = primarysd.generateUniquePath(log_path, "");
+    // make new directory
+    primarysd.mkdir(log_directory_path);
+
+    std::unique_ptr<WrappedFile> syslogfile = primarysd.open(log_directory_path + "/syslog.txt", static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END));
+    std::unique_ptr<WrappedFile> telemetrylogfile = primarysd.open(log_directory_path + "/telemetrylog.txt", static_cast<FILE_MODE>(O_WRITE | O_CREAT | O_AT_END),50);
+
+    // intialize sys logger
+    loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(std::move(syslogfile), networkmanager);
+
+    // initialize telemetry logger
+    loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::TELEMETRY>().initialize(std::move(telemetrylogfile),[](std::string_view msg){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(msg);});
+}

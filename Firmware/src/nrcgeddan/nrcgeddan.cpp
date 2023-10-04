@@ -68,9 +68,33 @@ void NRCGeddan::update()
         {
             _imu.update(_imudata);
             _zRollRate = _imudata.gz;            
-            error = _targetRollRate - _zRollRate;
-            allGotoCalibratedAngle(- error * _kp);
             
+            rollingAverageSum = 0;
+            if(!rollingLengthReached)
+            {
+                for (uint32_t i = 0; i < rollingAverageCounter; i++){
+                    rollingAverageSum += rollingArray[i];
+                }
+                rollingAverage = rollingAverageSum / static_cast<float>(rollingAverageCounter);
+                if(millis() - rollingAverageDuration > rollingAverageDuration)
+                {
+                    rollingLengthReached = true;
+                    rollingAverageLength = rollingAverageCounter;
+                }
+            } else
+            {
+                for (uint32_t i = rollingAverageCounter - rollingAverageLength; i < rollingAverageCounter; i++){
+                    rollingAverageSum += rollingArray[i % 1000];
+                }
+                rollingAverage = rollingAverageSum / static_cast<float>(rollingAverageLength);
+            }
+
+            
+            rollingAverageCounter ++;
+
+            error = _targetRollRate - rollingAverage;
+            allGotoCalibratedAngle(- error * _kp);
+
             break;
         }
         case GeddanState::HoldZero:
@@ -131,13 +155,16 @@ void NRCGeddan::update()
     }
 }
 
-float NRCGeddan::lerp(float x, float in_min, float in_max, float out_min, float out_max){
+float NRCGeddan::lerp(float x, float in_min, float in_max, float out_min, float out_max)
+{
     float out = (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     
-    if (out > (out_max > out_min ? out_max : out_min)){
+    if (out > (out_max > out_min ? out_max : out_min))
+    {
         return (out_max > out_min ? out_max : out_min);
     }
-    if (out < (out_min < out_max ? out_min : out_max)){
+    if (out < (out_min < out_max ? out_min : out_max))
+    {
         return (out_min < out_max ? out_min : out_max);
     }
     return out;
@@ -210,6 +237,10 @@ void NRCGeddan::extendedCommandHandler_impl(const NRCPacket::NRC_COMMAND_ID comm
         case 9:
         {
             currentGeddanState = static_cast<GeddanState>(command_packet.arg);
+
+
+            rollingLengthReached = false;
+            rollingAverageStart = millis();
         }
         default:
         {
@@ -217,4 +248,10 @@ void NRCGeddan::extendedCommandHandler_impl(const NRCPacket::NRC_COMMAND_ID comm
             break;
         }
     }
+}
+void NRCGeddan::startConstantRoll()
+{
+    rollingLengthReached = false;
+    rollingAverageCounter = 0;
+    rollingAverageStart = millis();
 }

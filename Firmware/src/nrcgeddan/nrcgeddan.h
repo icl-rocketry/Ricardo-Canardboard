@@ -108,12 +108,26 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
 
         //P Controller
 
+        void startConstantRoll();
+
         float error;
         const float _kp = 0.05;
         SensorStructs::ACCELGYRO_6AXIS_t _imudata;
 
         float _zRollRate;
         float _targetRollRate;
+
+        uint32_t rollingAverageDuration = 50;
+
+        uint32_t rollingAverageStart;
+        uint32_t rollingAverageCounter;
+        uint32_t rollingAverageLength;
+        float rollingAverageSum;
+        float rollingAverage;
+        bool rollingLengthReached = false;
+        std::vector<float> rollingArray(1000);
+
+
 
         
 

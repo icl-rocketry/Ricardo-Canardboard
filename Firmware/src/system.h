@@ -37,11 +37,16 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
         SPIClass SDSPI; //SPI for the SD card
         SPIClass SNSRSPI; //SPI for the sensors
 
-        //SdFat_Store primarysd;
+        
+
+        SdFat_Store primarysd;
 
     private:
         void setupSPI();
         void setupPins();
+        void initializeLoggers();
+
+        const std::string log_path = "/Logs";
 
         NRCGeddan Geddan;
 };
