@@ -59,8 +59,6 @@ void NRCGeddan::loadCalibration(){
 
 void NRCGeddan::update()
 {
-    logReadings();
-
     // if (this -> _state.flagSet(COMPONENT_STATUS_FLAGS::DISARMED))
     // {
     //     currentGeddanState = GeddanState::HoldZero;
@@ -71,10 +69,12 @@ void NRCGeddan::update()
         {
             _imu.update(_imudata);
             _zRollRate = _imudata.gz;            
+
+            _zRollRate = std::rand() % 10;
             
-            //rollingAverageSum += _zRollRate;
-            //rollingAverageSum -= gyroBuf.pop_push_back(GyroReading(_zRollRate, millis())).rollRate;
-            //rollingAverage = rollingAverageSum / static_cast<float>(gyroBuf.size());
+            rollingAverageSum += _zRollRate;
+            rollingAverageSum -= gyroBuf.pop_push_back(GyroReading(_zRollRate, millis()));
+            rollingAverage = rollingAverageSum / static_cast<float>(gyroBuf.size());
 
             error = _targetRollRate - _zRollRate;
 
@@ -139,6 +139,8 @@ void NRCGeddan::update()
             break;
         }
     }
+    logReadings();
+
 }
 
 float NRCGeddan::lerp(float x, float in_min, float in_max, float out_min, float out_max)

@@ -31,31 +31,32 @@ class GyroBuf : private std::queue<GyroReading> {
          * @param val 
          * @return T 
          */
-        GyroReading pop_push_back(GyroReading val){
+        float pop_push_back(GyroReading val){
             // push new element on queue
+
+            if (this->size() > 100){
+                Serial.println("RingBuf size exceeded!");
+            }
+
             this->push(val);
+
+            float measurement = 0;
             
             GyroReading lastVal = this->front();
             if(val.timestamp - lastVal.timestamp > rollingAverageDuration){
                 while (val.timestamp - lastVal.timestamp > rollingAverageDuration)
                 {
+                    measurement += lastVal.rollRate;
                     this->pop();
+                    lastVal = this->front();
                 }
-                return lastVal;
+                return measurement;
             }
             else
             {
-                return GyroReading(0,0);
+                return 0;
             }
         };
-
-        size_t size(){
-            return this->size();
-        }
-
-        void push(GyroReading val){
-            this->push(val);
-        }
 
         using std::queue<GyroReading>::size;
 
