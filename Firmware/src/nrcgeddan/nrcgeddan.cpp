@@ -59,7 +59,7 @@ void NRCGeddan::loadCalibration(){
 
 void NRCGeddan::update()
 {
-    //logReadings();
+    logReadings();
 
     // if (this -> _state.flagSet(COMPONENT_STATUS_FLAGS::DISARMED))
     // {

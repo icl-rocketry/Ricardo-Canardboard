@@ -114,5 +114,5 @@ void System::initializeLoggers()
     loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::SYS>().initialize(std::move(syslogfile), networkmanager);
 
     // initialize telemetry logger
-    //loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::GEDDAN>().initialize(std::move(geddanlogfile),[](std::string_view msg){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(msg);});
+    loggerhandler.retrieve_logger<RicCoreLoggingConfig::LOGGERS::GEDDAN>().initialize(std::move(geddanlogfile),[](std::string_view msg){RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::SYS>(msg);});
 }

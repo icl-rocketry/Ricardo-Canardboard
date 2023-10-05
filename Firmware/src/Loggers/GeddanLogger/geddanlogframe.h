@@ -9,7 +9,8 @@ private:
     {
         auto ret = RnpSerializer(
             &GeddanLogFrame::zRollRate,
-            &GeddanLogFrame::movingAverage
+            &GeddanLogFrame::movingAverage,
+            &GeddanLogFrame::timestamp
         );
         return ret;
     }
