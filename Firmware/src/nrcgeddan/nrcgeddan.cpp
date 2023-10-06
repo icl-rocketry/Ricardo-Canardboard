@@ -16,18 +16,13 @@ void NRCGeddan::setup()
     geddanServo3.setup();
     prevLogMessageTime = millis();
     loadCalibration();
-
-
-    previousGeddanState = currentGeddanState;
-    wiggleTestTime = millis();
-    currentGeddanState = GeddanState::WiggleTest;
 }
 void NRCGeddan::allGotoCalibratedAngle(float desiredAngle) // -15 to 15
 {
-    if(desiredAngle > 15){
-        desiredAngle = 15;
-    } else if(desiredAngle < -15){
-        desiredAngle = -15;
+    if(desiredAngle > 14){
+        desiredAngle = 14;
+    } else if(desiredAngle < -14){
+        desiredAngle = -14;
     }
     geddanServo1.goto_AngleHighRes(desiredAngle + _default_angle1);
     geddanServo2.goto_AngleHighRes(desiredAngle + _default_angle2);
@@ -59,18 +54,16 @@ void NRCGeddan::loadCalibration(){
 
 void NRCGeddan::update()
 {
-    // if (this -> _state.flagSet(COMPONENT_STATUS_FLAGS::DISARMED))
-    // {
-    //     currentGeddanState = GeddanState::HoldZero;
-    // }
+    if (this -> _state.flagSet(COMPONENT_STATUS_FLAGS::DISARMED))
+    {
+        currentGeddanState = GeddanState::HoldZero;
+    }
     
     switch(currentGeddanState){
         case GeddanState::ConstantRoll:
         {
             _imu.update(_imudata);
             _zRollRate = _imudata.gz;            
-
-            _zRollRate = std::rand() % 10;
             
             rollingAverageSum += _zRollRate;
             rollingAverageSum -= gyroBuf.pop_push_back(GyroReading(_zRollRate, millis()));

@@ -61,8 +61,7 @@ class GyroBuf : private std::queue<GyroReading> {
         using std::queue<GyroReading>::size;
 
     private:
-        static constexpr size_t maxLen = 1000;
-        static constexpr uint32_t rollingAverageDuration = 50;
+        static constexpr uint32_t rollingAverageDuration = 100;
 
 
 };
@@ -161,7 +160,7 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
             Fun = 4,
         };
 
-        GeddanState currentGeddanState = GeddanState::ConstantRoll;
+        GeddanState currentGeddanState = GeddanState::HoldZero;
 
         //P Controller
 
@@ -192,14 +191,14 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
         // const uint64_t startSpinRight = 6000;
         // const uint64_t endOfWiggleSeq = 6500;
 
-        const uint64_t startSlowSpinLeft = 100;
-        const uint64_t zeroCanards2 = 200;
-        const uint64_t startSlowSpinRight = 300;
-        const uint64_t zeroCanards3 = 400;
-        const uint64_t zeroCanards4 = 500;
-        const uint64_t startSpinLeft = 550;
-        const uint64_t startSpinRight = 600;
-        const uint64_t endOfWiggleSeq = 650;
+        const uint64_t startSlowSpinLeft = 1000;
+        const uint64_t zeroCanards2 = 2000;
+        const uint64_t startSlowSpinRight = 3000;
+        const uint64_t zeroCanards3 = 4000;
+        const uint64_t zeroCanards4 = 5000;
+        const uint64_t startSpinLeft = 5500;
+        const uint64_t startSpinRight = 6000;
+        const uint64_t endOfWiggleSeq = 6500;
         float lerp(float x, float in_min, float in_max, float out_min, float out_max);
         bool timeFrameCheck(int64_t start_time, int64_t end_time = -1);
 

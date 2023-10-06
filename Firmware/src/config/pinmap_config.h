@@ -17,11 +17,11 @@ namespace PinMap{
     static constexpr int MagCs = 48;
     static constexpr int ImuCs = 47;
 
-    // static constexpr int SDMISO = 15;
-    // static constexpr int SDMOSI = 17;
-    // static constexpr int SDSCLK = 16;
-    //static constexpr int SDCs = 18;
-    //static constexpr int SDDet = 14;
+    static constexpr int SDMISO = 15;
+    static constexpr int SDMOSI = 17;
+    static constexpr int SDSCLK = 16;
+    static constexpr int SDCs = 18;
+    static constexpr int SDDet = 14;
 
     static constexpr int BuckEN = 39;
     static constexpr int BuckPGOOD = 42;
@@ -32,11 +32,11 @@ namespace PinMap{
     static constexpr int BuckOutputV = -1;
 
     //Kermit
-    static constexpr int SDCs = 6;
-    static constexpr int SDDet = 5;
-    static constexpr int SDSCLK = 12;
-    static constexpr int SDMISO = 11;
-    static constexpr int SDMOSI = 10;
+    // static constexpr int SDCs = 6;
+    // static constexpr int SDDet = 5;
+    // static constexpr int SDSCLK = 12;
+    // static constexpr int SDMISO = 11;
+    // static constexpr int SDMOSI = 10;
 };
 
 
