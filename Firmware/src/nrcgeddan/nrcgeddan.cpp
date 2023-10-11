@@ -25,8 +25,11 @@ void NRCGeddan::allGotoCalibratedAngle(float desiredAngle) // -15 to 15
         desiredAngle = -14;
     }
     geddanServo1.goto_AngleHighRes(desiredAngle + _default_angle1);
+    servo1Angle = desiredAngle + _default_angle1;
     geddanServo2.goto_AngleHighRes(desiredAngle + _default_angle2);
+    servo2Angle = desiredAngle + _default_angle2;
     geddanServo3.goto_AngleHighRes(desiredAngle + _default_angle3);
+    servo3Angle = desiredAngle + _default_angle3;
 }
 void NRCGeddan::allGotoRawAngle(float angle)
 {
@@ -240,6 +243,11 @@ void NRCGeddan::logReadings()
 
         logframe.zRollRate = _zRollRate;
         logframe.movingAverage = rollingAverage;
+        logframe.servo1Angle = servo1Angle;
+        logframe.servo2Angle = servo2Angle;
+        logframe.servo3Angle = servo3Angle;
+        logframe.geddanState = static_cast<uint8_t>(currentGeddanState);
+        logframe.armed = this -> _state.flagSet(COMPONENT_STATUS_FLAGS::DISARMED);
 
         logframe.timestamp = micros();
 

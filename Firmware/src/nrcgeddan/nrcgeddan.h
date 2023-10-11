@@ -177,6 +177,10 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
         float rollingAverageSum;
         float rollingAverage;
         
+        float servo1Angle;
+        float servo2Angle;
+        float servo3Angle;
+        
 
         
         //Wiggle Test Stuff
@@ -198,7 +202,7 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
         const uint64_t zeroCanards4 = 5000;
         const uint64_t startSpinLeft = 5500;
         const uint64_t startSpinRight = 6000;
-        const uint64_t endOfWiggleSeq = 6500;
+        const uint64_t endOfWiggleSeq = 6500  ;
         float lerp(float x, float in_min, float in_max, float out_min, float out_max);
         bool timeFrameCheck(int64_t start_time, int64_t end_time = -1);
 
