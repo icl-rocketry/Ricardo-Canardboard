@@ -10,6 +10,10 @@
 #include "Commands/commands.h"
 #include <libriccore/networkinterfaces/can/canbus.h>
 #include <SPI.h>
+#include <Wire.h>
+
+#include "Sensors/sensors.h"
+#include "Sensors/estimator.h"
 
 #include "SiC43x.h"
 #include "sensors/icm_20608.h"
@@ -28,11 +32,15 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 
         SPIClass spi;
         SPIClass sdspi;
+        TwoWire I2C;
 
         SiC43x Buck;
         ICM_20608 IMU;
 
         CanBus<SYSTEM_FLAG> canbus;
+
+        Sensors sensors;
+        Estimator estimator;
 
         SPIClass SDSPI; //SPI for the SD card
         SPIClass SNSRSPI; //SPI for the sensors

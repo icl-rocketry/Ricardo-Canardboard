@@ -15,17 +15,21 @@
 #include "Commands/commands.h"
 
 #include "States/idle.h"
+
 static constexpr int SPI_BUS_NUM = 0;
 static constexpr int SDSPI_BUS_NUM = 1;
 
 System::System():   RicCoreSystem(Commands::command_map,Commands::defaultEnabledCommands,Serial),
                     spi(SPI_BUS_NUM),
                     sdspi(SDSPI_BUS_NUM),
+                    I2C(0),
                     Buck(PinMap::BuckPGOOD, PinMap::BuckEN, 0, 1, PinMap::BuckOutputV, 34000, 3000),
                     IMU(spi, systemstatus, PinMap::ImuCs),
                     canbus(systemstatus,PinMap::TxCan,PinMap::RxCan,3),
+                    sensors(spi, I2C, systemstatus),
+                    estimator(systemstatus),
                     primarysd(SDSPI,PinMap::SDCs,SD_SCK_MHZ(20),false,&systemstatus),
-                    Geddan(networkmanager,Buck,IMU,PinMap::ServoPWM1,0,PinMap::ServoPWM2,1,PinMap::ServoPWM3,2,networkmanager.getAddress())
+                    Geddan(networkmanager,Buck,estimator,PinMap::ServoPWM1,0,PinMap::ServoPWM2,1,PinMap::ServoPWM3,2,networkmanager.getAddress())
                     {};
 
 
@@ -60,12 +64,22 @@ void System::systemSetup(){
 
     primarysd.setup();
     initializeLoggers();
+    sensors.setup();
+    estimator.setup();
+    estimator.setHome(sensors.getData());
 };
 
+long lastUpdate;
 
 void System::systemUpdate(){
     Buck.update();
     Geddan.update();
+    sensors.update();
+    estimator.update(sensors.getData());
+    if(millis() - lastUpdate > 1000){
+        Serial.println("x:" + static_cast<String>(estimator.getData().eulerAngles(0)) + " y:" + static_cast<String>(estimator.getData().eulerAngles(1)) + " z:" + static_cast<String>(estimator.getData().eulerAngles(2)));
+        lastUpdate = millis();
+    }  
 };
 
 void System::setupSPI(){

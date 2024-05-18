@@ -31,6 +31,26 @@ void NRCGeddan::allGotoCalibratedAngle(float desiredAngle) // -15 to 15
     geddanServo3.goto_AngleHighRes(desiredAngle + _default_angle3);
     servo3Angle = desiredAngle + _default_angle3;
 }
+void NRCGeddan::ServoOneGotoCalibratedAngle(float desiredAngle) // -15 to 15
+{
+    if(desiredAngle > 30){
+        desiredAngle = 30;
+    } else if(desiredAngle < -30){
+        desiredAngle = -30;
+    }
+    geddanServo1.goto_AngleHighRes(desiredAngle + _default_angle1);
+    servo1Angle = desiredAngle + _default_angle1;
+}
+void NRCGeddan::ServoTwoGotoCalibratedAngle(float desiredAngle) // -15 to 15
+{
+    if(desiredAngle > 30){
+        desiredAngle = 30;
+    } else if(desiredAngle < -30){
+        desiredAngle = -30;
+    }
+    geddanServo2.goto_AngleHighRes(desiredAngle + _default_angle2);
+    servo2Angle = desiredAngle + _default_angle2;
+}
 void NRCGeddan::allGotoRawAngle(float angle)
 {
     geddanServo1.goto_AngleHighRes(angle);
@@ -57,24 +77,30 @@ void NRCGeddan::loadCalibration(){
 
 void NRCGeddan::update()
 {
-    if (this -> _state.flagSet(COMPONENT_STATUS_FLAGS::DISARMED))
-    {
-        currentGeddanState = GeddanState::HoldZero;
-    }
+    // if (this -> _state.flagSet(COMPONENT_STATUS_FLAGS::DISARMED))
+    // {
+    //     currentGeddanState = GeddanState::HoldZero;
+    // }
     
     switch(currentGeddanState){
         case GeddanState::ConstantRoll:
         {
-            _imu.update(_imudata);
-            _zRollRate = _imudata.gz;            
+            // _imu.update(_imudata);
+            // _zRollRate = _imudata.gz;            
             
-            rollingAverageSum += _zRollRate;
-            rollingAverageSum -= gyroBuf.pop_push_back(GyroReading(_zRollRate, millis()));
-            rollingAverage = rollingAverageSum / static_cast<float>(gyroBuf.size());
+            // rollingAverageSum += _zRollRate;
+            // rollingAverageSum -= gyroBuf.pop_push_back(GyroReading(_zRollRate, millis()));
+            // rollingAverage = rollingAverageSum / static_cast<float>(gyroBuf.size());
 
-            error = _targetRollRate - _zRollRate;
+            // error = _targetRollRate - _zRollRate;
 
-            allGotoCalibratedAngle(- error * _kp);
+            // allGotoCalibratedAngle(- error * _kp);
+            _pitch = _estimator.getData().eulerAngles(0);
+            _roll = _estimator.getData().eulerAngles(1);
+            ServoTwoGotoCalibratedAngle(_pitch * 180 * 0.31830988618);
+            ServoOneGotoCalibratedAngle(_roll * 180 * 0.31830988618);
+
+
 
             break;
         }
@@ -91,19 +117,19 @@ void NRCGeddan::update()
             }
             else if (timeFrameCheck(startSlowSpinLeft, zeroCanards2))
             {
-                allGotoRawAngle(lerp(millis() - wiggleTestTime, startSlowSpinLeft, startSlowSpinLeft + 800, 90, 0));
+                allGotoRawAngle(lerp(millis() - wiggleTestTime, startSlowSpinLeft, startSlowSpinLeft + 800, 90, 60));
             }
             else if (timeFrameCheck(zeroCanards2, startSlowSpinRight))
             {
-                allGotoRawAngle(lerp(millis() - wiggleTestTime, zeroCanards2, zeroCanards2 + 800, 0, 90));
+                allGotoRawAngle(lerp(millis() - wiggleTestTime, zeroCanards2, zeroCanards2 + 800, 60, 90));
             }
             else if (timeFrameCheck(startSlowSpinRight, zeroCanards3))
             {
-                allGotoRawAngle(lerp(millis() - wiggleTestTime, startSlowSpinRight, startSlowSpinRight + 800, 90, 180));
+                allGotoRawAngle(lerp(millis() - wiggleTestTime, startSlowSpinRight, startSlowSpinRight + 800, 90, 120));
             }
             else if (timeFrameCheck(zeroCanards3, zeroCanards4))
             {
-                allGotoRawAngle(lerp(millis() - wiggleTestTime, zeroCanards3, zeroCanards3 + 800, 180, 90));
+                allGotoRawAngle(lerp(millis() - wiggleTestTime, zeroCanards3, zeroCanards3 + 800, 120, 90));
             }
             else if (timeFrameCheck(zeroCanards4, startSpinLeft))
             {

@@ -9,6 +9,7 @@
 #include "SiC43x.h"
 #include "sensors/icm_20608.h"
 #include "sensors/sensorStructs.h"
+#include "sensors/estimator.h"
 
 struct GyroReading
 {
@@ -73,7 +74,7 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
 
         NRCGeddan(RnpNetworkManager &networkmanager,
                     SiC43x &buck,
-                    ICM_20608 &imu,
+                    Estimator &estimator,
                     uint8_t geddanServo1GPIO,
                     uint8_t geddanServo1Channel,
                     uint8_t geddanServo2GPIO,
@@ -85,7 +86,7 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
             NRCRemoteActuatorBase(networkmanager),
             _networkmanager(networkmanager),
             _buck(buck),
-            _imu(imu),
+            _estimator(estimator),
             _geddanServo1GPIO(geddanServo1GPIO),
             _geddanServo1Channel(geddanServo1Channel),
             _geddanServo2GPIO(geddanServo2GPIO),
@@ -108,7 +109,7 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
 
         RnpNetworkManager& _networkmanager;
         SiC43x& _buck;
-        ICM_20608& _imu;
+        Estimator& _estimator;
         const uint8_t _geddanServo1GPIO;
         const uint8_t _geddanServo1Channel;
         const uint8_t _geddanServo2GPIO;
@@ -142,6 +143,8 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
         
         void allGotoRawAngle(float angle);
         void allGotoCalibratedAngle(float angle);
+        void ServoOneGotoCalibratedAngle(float angle);
+        void ServoTwoGotoCalibratedAngle(float angle);
         void updateTargetRollRate(float targetRollRate);
 
         void execute_impl(packetptr_t packetptr);
@@ -160,7 +163,7 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
             Fun = 4,
         };
 
-        GeddanState currentGeddanState = GeddanState::HoldZero;
+        GeddanState currentGeddanState = GeddanState::WiggleTest;
 
         //P Controller
 
@@ -168,9 +171,10 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
 
         float error;
         const float _kp = 0.05;
-        SensorStructs::ACCELGYRO_6AXIS_t _imudata;
 
         float _zRollRate;
+        float _pitch;
+        float _roll;
         float _targetRollRate;
 
         GyroBuf gyroBuf;
