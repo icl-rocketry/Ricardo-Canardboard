@@ -10,7 +10,7 @@
 #include "Config/commands_config.h"
 #include "Config/pinmap_config.h"
 #include "Config/general_config.h"
-#include "config/services_config.h"
+#include "Config/services_config.h"
 
 #include "Commands/commands.h"
 
@@ -25,7 +25,7 @@ System::System():   RicCoreSystem(Commands::command_map,Commands::defaultEnabled
                     IMU(spi, systemstatus, PinMap::ImuCs),
                     canbus(systemstatus,PinMap::TxCan,PinMap::RxCan,3),
                     primarysd(SDSPI,PinMap::SDCs,SD_SCK_MHZ(20),false,&systemstatus),
-                    Geddan(networkmanager,Buck,IMU,PinMap::ServoPWM1,0,PinMap::ServoPWM2,1,PinMap::ServoPWM3,2,networkmanager.getAddress())
+                    Geddan(networkmanager,Buck,IMU,PinMap::ServoPWM0,0)
                     {};
 
 
@@ -52,7 +52,6 @@ void System::systemSetup(){
 
     networkmanager.setNodeType(NODETYPE::HUB);
     networkmanager.setNoRouteAction(NOROUTE_ACTION::BROADCAST,{1,3});
-    
     networkmanager.addInterface(&canbus);
 
     uint8_t geddanservice = static_cast<uint8_t>(Services::ID::Geddan);
@@ -75,7 +74,7 @@ void System::setupSPI(){
     spi.setDataMode(SPI_MODE0);
 
     sdspi.begin(PinMap::SDSCLK,PinMap::SDMISO,PinMap::SDMOSI);
-    sdspi.setFrequency(8000000);
+    sdspi.setFrequency(50000000);
     sdspi.setBitOrder(MSBFIRST);
     sdspi.setDataMode(SPI_MODE0);
 }

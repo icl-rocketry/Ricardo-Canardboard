@@ -1,127 +1,115 @@
 #include "nrcgeddan.h"
-#include "geddancalibrationpacket.h"
-#include <Arduino.h>
-#include <libriccore/commands/commandhandler.h>
-#include "config/services_config.h"
-#include <librrc/Helpers/nvsstore.h>
-#include "librrc/Helpers/rangemap.h"
-#include "Loggers/GeddanLogger/geddanlogframe.h"
-
-
 
 void NRCGeddan::setup()
 {
-    geddanServo1.setup();
-    geddanServo2.setup();
-    geddanServo3.setup();
-    prevLogMessageTime = millis();
-    loadCalibration();
-}
-void NRCGeddan::allGotoCalibratedAngle(float desiredAngle) // -15 to 15
-{
-    if(desiredAngle > 14){
-        desiredAngle = 14;
-    } else if(desiredAngle < -14){
-        desiredAngle = -14;
-    }
-    geddanServo1.goto_AngleHighRes(desiredAngle + _default_angle1);
-    servo1Angle = desiredAngle + _default_angle1;
-    geddanServo2.goto_AngleHighRes(desiredAngle + _default_angle2);
-    servo2Angle = desiredAngle + _default_angle2;
-    geddanServo3.goto_AngleHighRes(desiredAngle + _default_angle3);
-    servo3Angle = desiredAngle + _default_angle3;
-}
-void NRCGeddan::allGotoRawAngle(float angle)
-{
-    geddanServo1.goto_AngleHighRes(angle);
-    geddanServo2.goto_AngleHighRes(angle);
-    geddanServo3.goto_AngleHighRes(angle);
+    m_geddanServo.setup();
+    m_default_angle = m_geddanServo.getValue();     // add to update in case it gets recalibrated.
+
+    _networkmanager.registerService(geddanServoService,m_geddanServo.getThisNetworkCallback());
+
+    m_prevLogMessageTime = millis();
 }
 
-void NRCGeddan::loadCalibration(){
-    
-    std::string NVSName = "Canard";
-    NVSStore _NVS(NVSName, NVSStore::calibrationType::Canard);
-    
-    std::vector<uint8_t> calibSerialised = _NVS.loadBytes();
-    
-    if(calibSerialised.size() == 0){
-        return;
+void NRCGeddan::gotoCalibratedAngle(float desiredAngle) // -15 to 15
+{
+    if(desiredAngle > 14.0f){
+        desiredAngle = 14.0f;
+    } else if(desiredAngle < -14.0f){
+        desiredAngle = -14.0f;
     }
-    GeddanCalibrationPacket calibpacket;
-    calibpacket.deserializeBody(calibSerialised);
 
-    setHome(calibpacket.home_ang1, calibpacket.home_ang2, calibpacket.home_ang3);
+    m_geddanServoAdapter.execute(static_cast<uint32_t>(m_default_angle + desiredAngle*10.0f));
+}
+
+void NRCGeddan::gotoRawAngle(float angle)
+{
+    m_geddanServoAdapter.execute(static_cast<uint32_t>(m_default_angle + angle*10.0f));
 }
 
 
 void NRCGeddan::update()
 {
-    if (this -> _state.flagSet(COMPONENT_STATUS_FLAGS::DISARMED))
+
+    if (this -> _state.flagSet(LIBRRC::COMPONENT_STATUS_FLAGS::DISARMED))
     {
-        currentGeddanState = GeddanState::HoldZero;
+        if (!m_geddanServoAdapter.getState().flagSet(LIBRRC::COMPONENT_STATUS_FLAGS::DISARMED)){
+            m_geddanServoAdapter.disarm();   // servo state to match nrcgeddan
+        }
+
+        if (static_cast<int32_t>(m_default_angle) != m_geddanServo.getValue()){
+            m_default_angle = m_geddanServo.getValue();
+        }
+
     }
+
+    if (this -> _state.flagSet(LIBRRC::COMPONENT_STATUS_FLAGS::NOMINAL))
+    {
+        if (!m_geddanServoAdapter.getState().flagSet(LIBRRC::COMPONENT_STATUS_FLAGS::NOMINAL)){
+            m_geddanServoAdapter.arm(0);   // servo state to match nrcgeddan
+        }
+
+    }
+
     
-    switch(currentGeddanState){
+    switch(m_currentGeddanState){
+        case GeddanState::Locked:
+        {
+            break;  // if geddan is armed, so is the servo. if the servo is armed its gonna hold zero (locked position) by default
+        }
         case GeddanState::ConstantRoll:
         {
-            _imu.update(_imudata);
-            _zRollRate = _imudata.gz;            
+            m_imu.update(m_imudata);
+            m_zRollRate = m_imudata.gz;            
             
-            rollingAverageSum += _zRollRate;
-            rollingAverageSum -= gyroBuf.pop_push_back(GyroReading(_zRollRate, millis()));
-            rollingAverage = rollingAverageSum / static_cast<float>(gyroBuf.size());
 
-            error = _targetRollRate - _zRollRate;
+            m_movingAvg.update(m_zRollRate); 
+            m_avgRollRate = m_movingAvg.getAvg();
 
-            allGotoCalibratedAngle(- error * _kp);
+            error = m_targetRollRate - m_avgRollRate;
 
-            break;
-        }
-        case GeddanState::HoldZero:
-        {
-            allGotoCalibratedAngle(0);
+            gotoCalibratedAngle(- error * m_kp);
+
             break;
         }
         case GeddanState::WiggleTest:
         {
             if (timeFrameCheck(zeroCanards, startSlowSpinLeft))
             {
-                allGotoRawAngle(90);
+                gotoRawAngle(90);
             }
             else if (timeFrameCheck(startSlowSpinLeft, zeroCanards2))
             {
-                allGotoRawAngle(lerp(millis() - wiggleTestTime, startSlowSpinLeft, startSlowSpinLeft + 800, 90, 0));
+                gotoRawAngle(lerp(millis() - wiggleTestTime, startSlowSpinLeft, startSlowSpinLeft + 800, 90, 0));
             }
             else if (timeFrameCheck(zeroCanards2, startSlowSpinRight))
             {
-                allGotoRawAngle(lerp(millis() - wiggleTestTime, zeroCanards2, zeroCanards2 + 800, 0, 90));
+                gotoRawAngle(lerp(millis() - wiggleTestTime, zeroCanards2, zeroCanards2 + 800, 0, 90));
             }
             else if (timeFrameCheck(startSlowSpinRight, zeroCanards3))
             {
-                allGotoRawAngle(lerp(millis() - wiggleTestTime, startSlowSpinRight, startSlowSpinRight + 800, 90, 180));
+                gotoRawAngle(lerp(millis() - wiggleTestTime, startSlowSpinRight, startSlowSpinRight + 800, 90, 180));
             }
             else if (timeFrameCheck(zeroCanards3, zeroCanards4))
             {
-                allGotoRawAngle(lerp(millis() - wiggleTestTime, zeroCanards3, zeroCanards3 + 800, 180, 90));
+                gotoRawAngle(lerp(millis() - wiggleTestTime, zeroCanards3, zeroCanards3 + 800, 180, 90));
             }
             else if (timeFrameCheck(zeroCanards4, startSpinLeft))
             {
-                allGotoCalibratedAngle(0);
+                gotoCalibratedAngle(0);
             }
             else if (timeFrameCheck(startSpinLeft, startSpinRight))
             {
-                allGotoCalibratedAngle(-15);
+                gotoCalibratedAngle(-15);
             }
             else if (timeFrameCheck(startSpinRight, endOfWiggleSeq))
             {
-                allGotoCalibratedAngle(15);
+                gotoCalibratedAngle(15);
             }
             else if (timeFrameCheck(endOfWiggleSeq))
             {
-                allGotoCalibratedAngle(0);
+                gotoCalibratedAngle(0);
                 resetMovingAverage();
-                currentGeddanState = previousGeddanState;
+                m_currentGeddanState = previousGeddanState;
                 
             }
             break;
@@ -134,7 +122,12 @@ void NRCGeddan::update()
         {
             break;
         }
+        default:
+        {
+            break;
+        }
     }
+    
     logReadings();
 
 }
@@ -171,47 +164,34 @@ bool NRCGeddan::timeFrameCheck(int64_t start_time, int64_t end_time)
 
 void NRCGeddan::execute_impl(packetptr_t packetptr) //Set it to roll rate, mili radians per second
 {
-    currentGeddanState = GeddanState::ConstantRoll;
+    m_currentGeddanState = GeddanState::ConstantRoll;
     SimpleCommandPacket execute_command(*packetptr);
-    _targetRollRate = execute_command.arg;
+    m_targetRollRate = execute_command.arg;
 }
-void NRCGeddan::calibrate_impl(packetptr_t packetptr)
-{
-    GeddanCalibrationPacket calibrate_comm(*packetptr);
 
-    std::vector<uint8_t> serialisedvect = packetptr->getBody();
-
-    std::string NVSName = "Canard";
-    NVSStore _NVS(NVSName, NVSStore::calibrationType::Canard);
-    
-    _NVS.saveBytes(serialisedvect);
-    
-    setHome(calibrate_comm.home_ang1, calibrate_comm.home_ang2, calibrate_comm.home_ang3);
-
-}
 void NRCGeddan::extendedCommandHandler_impl(const NRCPacket::NRC_COMMAND_ID commandID,packetptr_t packetptr){
     SimpleCommandPacket command_packet(*packetptr);
     switch(static_cast<uint8_t>(commandID))
     {
         case 6: // Wiggle test
         {
-            previousGeddanState = currentGeddanState;
+            previousGeddanState = m_currentGeddanState;
             wiggleTestTime = millis();
-            currentGeddanState = GeddanState::WiggleTest;
+            m_currentGeddanState = GeddanState::WiggleTest;
             break;
         }
         case 7: // Debug go to calibrated angle
         {
-            if(currentGeddanState == GeddanState::Debug){
-                allGotoCalibratedAngle(command_packet.arg);
+            if(m_currentGeddanState == GeddanState::Debug){
+                gotoCalibratedAngle(command_packet.arg);
             }
 
             break;
         }
         case 8: // Debug go to raw angle
         {
-            if(currentGeddanState == GeddanState::Debug){
-                allGotoRawAngle(command_packet.arg);
+            if(m_currentGeddanState == GeddanState::Debug){
+                gotoRawAngle(command_packet.arg);
                 break;
             }
             else{
@@ -220,7 +200,7 @@ void NRCGeddan::extendedCommandHandler_impl(const NRCPacket::NRC_COMMAND_ID comm
         }
         case 9:
         {
-            currentGeddanState = static_cast<GeddanState>(command_packet.arg);
+            m_currentGeddanState = static_cast<GeddanState>(command_packet.arg);
             resetMovingAverage();
         }
         default:
@@ -232,27 +212,25 @@ void NRCGeddan::extendedCommandHandler_impl(const NRCPacket::NRC_COMMAND_ID comm
 }
 void NRCGeddan::resetMovingAverage()
 {
-    gyroBuf = GyroBuf();
+    // m_gyroBuf = GyroBuf();
 }
 
 void NRCGeddan::logReadings()
 {
-    if (micros() - prev_telemetry_log_time > telemetry_log_delta)
+    if (micros() - m_prev_telemetry_log_time > m_telemetry_log_delta)
     {
         GeddanLogFrame logframe;
 
-        logframe.zRollRate = _zRollRate;
-        logframe.movingAverage = rollingAverage;
-        logframe.servo1Angle = servo1Angle;
-        logframe.servo2Angle = servo2Angle;
-        logframe.servo3Angle = servo3Angle;
-        logframe.geddanState = static_cast<uint8_t>(currentGeddanState);
-        logframe.armed = this -> _state.flagSet(COMPONENT_STATUS_FLAGS::DISARMED);
+        logframe.zRollRate = m_zRollRate;
+        logframe.movingAverage = m_avgRollRate;
+        logframe.servoAngle = m_servoAngle;
+        logframe.geddanState = static_cast<uint8_t>(m_currentGeddanState);
+        logframe.armed = this -> _state.flagSet(LIBRRC::COMPONENT_STATUS_FLAGS::DISARMED);
 
         logframe.timestamp = micros();
 
         RicCoreLogging::log<RicCoreLoggingConfig::LOGGERS::GEDDAN>(logframe);
 
-        prev_telemetry_log_time = micros();
+        m_prev_telemetry_log_time = micros();
     }
 }

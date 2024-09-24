@@ -12,7 +12,7 @@
 #include <SPI.h>
 
 #include "SiC43x.h"
-#include "sensors/icm_20608.h"
+#include "Sensors/icm_20608.h"
 #include "nrcgeddan/nrcgeddan.h"
 #include "Storage/sdfat_store.h"
 
@@ -36,8 +36,6 @@ class System : public RicCoreSystem<System,SYSTEM_FLAG,Commands::ID>
 
         SPIClass SDSPI; //SPI for the SD card
         SPIClass SNSRSPI; //SPI for the sensors
-
-        
 
         SdFat_Store primarysd;
 

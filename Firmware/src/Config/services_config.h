@@ -19,7 +19,8 @@ namespace Services{
      * 
      */
     enum class ID:uint8_t{
-        Geddan = 10
+        Geddan = 10,
+        Servo0 = 20
     };
 
 };

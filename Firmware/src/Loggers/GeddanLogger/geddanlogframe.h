@@ -10,9 +10,7 @@ private:
         auto ret = RnpSerializer(
             &GeddanLogFrame::zRollRate,
             &GeddanLogFrame::movingAverage,
-            &GeddanLogFrame::servo1Angle,
-            &GeddanLogFrame::servo2Angle,
-            &GeddanLogFrame::servo3Angle,
+            &GeddanLogFrame::servoAngle,
             &GeddanLogFrame::geddanState,
             &GeddanLogFrame::armed,
             &GeddanLogFrame::timestamp
@@ -22,7 +20,7 @@ private:
 
 public:
     //gps
-    float zRollRate, movingAverage, servo1Angle, servo2Angle, servo3Angle; //Bad to in single line
+    float zRollRate, movingAverage, servoAngle; //Bad to in single line
     uint8_t geddanState;
     bool armed;
 

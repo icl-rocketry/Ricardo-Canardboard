@@ -27,6 +27,9 @@ class SdFat_Store : public StoreBase
         SdFat_Store(SPIClass &spi,const uint8_t cs, const uint32_t frequency,bool dedicatedSPI,Types::CoreTypes::SystemStatus_t* systemstatus);
 
         void setup();
+        uint8_t getError(){
+            return filesys.sdErrorCode();
+        }
 
         ~SdFat_Store(){};
     protected:

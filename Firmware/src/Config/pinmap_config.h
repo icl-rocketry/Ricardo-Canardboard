@@ -7,9 +7,9 @@
 
 namespace PinMap{
 
-    static constexpr int ServoPWM1 = 38;
-    static constexpr int ServoPWM2 = 9;
-    static constexpr int ServoPWM3 = 40;
+    static constexpr int ServoPWM0 = 38;
+    static constexpr int ServoPWM1 = 9;
+    static constexpr int ServoPWM2 = 40;
 
     static constexpr int MISO = 33;
     static constexpr int MOSI = 34;
@@ -31,12 +31,6 @@ namespace PinMap{
 
     static constexpr int BuckOutputV = -1;
 
-    //Kermit
-    // static constexpr int SDCs = 6;
-    // static constexpr int SDDet = 5;
-    // static constexpr int SDSCLK = 12;
-    // static constexpr int SDMISO = 11;
-    // static constexpr int SDMOSI = 10;
 };
 
 
