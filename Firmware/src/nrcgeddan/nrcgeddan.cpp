@@ -26,9 +26,18 @@ void NRCGeddan::gotoRawAngle(float angle)
     m_geddanServoAdapter.execute(static_cast<uint32_t>(m_default_angle + angle*10.0f));
 }
 
+void NRCGeddan::updateRollRate(){
+    m_imu.update(m_imudata);
+    m_zRollRate = m_imudata.gz;            
+    m_movingAvg.update(m_zRollRate); 
+    m_avgRollRate = m_movingAvg.getAvg();
+}
+
 
 void NRCGeddan::update()
 {
+    updateRollRate();
+
 
     if (this -> _state.flagSet(LIBRRC::COMPONENT_STATUS_FLAGS::DISARMED))
     {
@@ -58,17 +67,8 @@ void NRCGeddan::update()
         }
         case GeddanState::ConstantRoll:
         {
-            m_imu.update(m_imudata);
-            m_zRollRate = m_imudata.gz;            
-            
-
-            m_movingAvg.update(m_zRollRate); 
-            m_avgRollRate = m_movingAvg.getAvg();
-
             error = m_targetRollRate - m_avgRollRate;
-
             gotoCalibratedAngle(- error * m_kp);
-
             break;
         }
         case GeddanState::WiggleTest:
@@ -223,7 +223,7 @@ void NRCGeddan::logReadings()
 
         logframe.zRollRate = m_zRollRate;
         logframe.movingAverage = m_avgRollRate;
-        logframe.servoAngle = m_servoAngle;
+        logframe.servoAngle = m_geddanServoAdapter.getValue();
         logframe.geddanState = static_cast<uint8_t>(m_currentGeddanState);
         logframe.armed = this -> _state.flagSet(LIBRRC::COMPONENT_STATUS_FLAGS::DISARMED);
 

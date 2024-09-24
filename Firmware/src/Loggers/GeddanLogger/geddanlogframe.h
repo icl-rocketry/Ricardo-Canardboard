@@ -20,7 +20,9 @@ private:
 
 public:
     //gps
-    float zRollRate, movingAverage, servoAngle; //Bad to in single line
+    float zRollRate;
+    float movingAverage;
+    float servoAngle; //Bad to in single line
     uint8_t geddanState;
     bool armed;
 

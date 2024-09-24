@@ -88,6 +88,7 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
         // Control
         float m_default_angle;
         void gotoRawAngle(float angle);
+        void updateRollRate();
         void gotoCalibratedAngle(float angle);
         void updateTargetRollRate(float targetRollRate);
 
