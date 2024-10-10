@@ -73,7 +73,7 @@ void NRCGeddan::update()
         }
         case GeddanState::WiggleTest:
         {
-            if (timeFrameCheck(zeroCanards, startSpinLeft))
+            if (timeFrameCheck(zeroCanards, startSpinLeftHard))
             {
                 gotoCalibratedAngle(0);
             }
