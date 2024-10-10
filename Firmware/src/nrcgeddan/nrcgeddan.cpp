@@ -73,36 +73,22 @@ void NRCGeddan::update()
         }
         case GeddanState::WiggleTest:
         {
-            if (timeFrameCheck(zeroCanards, startSlowSpinLeft))
-            {
-                gotoRawAngle(90);
-            }
-            else if (timeFrameCheck(startSlowSpinLeft, zeroCanards2))
-            {
-                gotoRawAngle(lerp(millis() - wiggleTestTime, startSlowSpinLeft, startSlowSpinLeft + 800, 90, 0));
-            }
-            else if (timeFrameCheck(zeroCanards2, startSlowSpinRight))
-            {
-                gotoRawAngle(lerp(millis() - wiggleTestTime, zeroCanards2, zeroCanards2 + 800, 0, 90));
-            }
-            else if (timeFrameCheck(startSlowSpinRight, zeroCanards3))
-            {
-                gotoRawAngle(lerp(millis() - wiggleTestTime, startSlowSpinRight, startSlowSpinRight + 800, 90, 180));
-            }
-            else if (timeFrameCheck(zeroCanards3, zeroCanards4))
-            {
-                gotoRawAngle(lerp(millis() - wiggleTestTime, zeroCanards3, zeroCanards3 + 800, 180, 90));
-            }
-            else if (timeFrameCheck(zeroCanards4, startSpinLeft))
+            if (timeFrameCheck(zeroCanards, startSpinLeft))
             {
                 gotoCalibratedAngle(0);
             }
-            else if (timeFrameCheck(startSpinLeft, startSpinRight))
+            else if (timeFrameCheck(startSpinLeftHard, startSpinRightHard))
             {
+                gotoRawAngle(-90);
+            }
+            else if (timeFrameCheck(startSpinRightHard, startSpinLeft))
+            {
+                gotoRawAngle(90);
+            }
+            else if (timeFrameCheck(startSpinLeft, startSpinRight)){
                 gotoCalibratedAngle(-15);
             }
-            else if (timeFrameCheck(startSpinRight, endOfWiggleSeq))
-            {
+            else if (timeFrameCheck(startSpinRight, endOfWiggleSeq)){
                 gotoCalibratedAngle(15);
             }
             else if (timeFrameCheck(endOfWiggleSeq))

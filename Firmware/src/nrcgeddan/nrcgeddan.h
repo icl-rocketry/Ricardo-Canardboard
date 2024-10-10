@@ -125,14 +125,11 @@ class NRCGeddan : public NRCRemoteActuatorBase<NRCGeddan>
         // Wiggle Test Stuff
 
         const uint64_t zeroCanards = 0;
-        const uint64_t startSlowSpinLeft = 1000;
-        const uint64_t zeroCanards2 = 2000;
-        const uint64_t startSlowSpinRight = 3000;
-        const uint64_t zeroCanards3 = 4000;
-        const uint64_t zeroCanards4 = 5000;
-        const uint64_t startSpinLeft = 5500;
-        const uint64_t startSpinRight = 6000;
-        const uint64_t endOfWiggleSeq = 6500  ;
+        const uint64_t startSpinLeftHard = 1000;
+        const uint64_t startSpinRightHard = 2000;
+        const uint64_t startSpinLeft = 3000;
+        const uint64_t startSpinRight = 4000;
+        const uint64_t endOfWiggleSeq = 5000;
         float lerp(float x, float in_min, float in_max, float out_min, float out_max);
         bool timeFrameCheck(int64_t start_time, int64_t end_time = -1);
 
