@@ -3,7 +3,7 @@
 void NRCGeddan::setup()
 {
     m_geddanServo.setup();
-    m_default_angle = m_geddanServo.getValue();     // add to update in case it gets recalibrated.
+    m_default_angle = m_geddanServo.getValue();  
 
     _networkmanager.registerService(geddanServoService,m_geddanServo.getThisNetworkCallback());
 
@@ -42,14 +42,10 @@ void NRCGeddan::update()
     if (this -> _state.flagSet(LIBRRC::COMPONENT_STATUS_FLAGS::DISARMED))
     {
         if (!m_geddanServoAdapter.getState().flagSet(LIBRRC::COMPONENT_STATUS_FLAGS::DISARMED)){
+            gotoCalibratedAngle(0);
             m_geddanServoAdapter.disarm();   // servo state to match nrcgeddan
             m_buck.setEN(false);             // disable buck
         }
-
-        if (static_cast<int32_t>(m_default_angle) != m_geddanServo.getValue()){
-            m_default_angle = m_geddanServo.getValue();
-        }
-
     }
 
     if (this -> _state.flagSet(LIBRRC::COMPONENT_STATUS_FLAGS::NOMINAL))
