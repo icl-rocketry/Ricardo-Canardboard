@@ -21,7 +21,7 @@ static constexpr int SDSPI_BUS_NUM = 1;
 System::System():   RicCoreSystem(Commands::command_map,Commands::defaultEnabledCommands,Serial),
                     spi(SPI_BUS_NUM),
                     sdspi(SDSPI_BUS_NUM),
-                    Buck(PinMap::BuckPGOOD, PinMap::BuckEN, 0, 1, PinMap::BuckOutputV, 34000, 3000),
+                    Buck(PinMap::BuckPGOOD, PinMap::BuckEN, 0, 0, PinMap::BuckOutputV, 34000, 3000),
                     IMU(spi, systemstatus, PinMap::ImuCs),
                     canbus(systemstatus,PinMap::TxCan,PinMap::RxCan,3),
                     primarysd(SDSPI,PinMap::SDCs,SD_SCK_MHZ(20),false,&systemstatus),

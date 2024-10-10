@@ -43,6 +43,7 @@ void NRCGeddan::update()
     {
         if (!m_geddanServoAdapter.getState().flagSet(LIBRRC::COMPONENT_STATUS_FLAGS::DISARMED)){
             m_geddanServoAdapter.disarm();   // servo state to match nrcgeddan
+            m_buck.setEN(false);             // disable buck
         }
 
         if (static_cast<int32_t>(m_default_angle) != m_geddanServo.getValue()){
@@ -55,6 +56,7 @@ void NRCGeddan::update()
     {
         if (!m_geddanServoAdapter.getState().flagSet(LIBRRC::COMPONENT_STATUS_FLAGS::NOMINAL)){
             m_geddanServoAdapter.arm(0);   // servo state to match nrcgeddan
+            m_buck.setEN(true);             // enable buck
         }
 
     }
